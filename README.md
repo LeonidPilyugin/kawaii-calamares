@@ -1,2 +1,2 @@
 # kawaii-calamares
-Kawaii installer for MenheraOS
+calamares installer for MenheraOS
