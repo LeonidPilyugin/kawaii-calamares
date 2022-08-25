@@ -9,7 +9,7 @@ depends=('binutils' 'fakeroot' 'gcc' 'boost' 'patch' 'qt5-tools' 'yaml-cpp' 'kpm
 url='https://github.com/LeonidPilyugin/kawaii-calamares/tree/main'
 license=('GPL3')
 source=("$pkgname-$pkgver.tar.gz::https://github.com/LeonidPilyugin/$pkgname/releases/download/v$pkgver/files.tar.gz")
-sha256sums=('2476cd0cdc943ba3324cb61218fde51e19dabb5b3cf2a8b3cb546f04f77eb749')
+sha256sums=('f1967fa7ddd8930d87c08076520ee0799c1e3e49f71dc5ee51bfe846b3e35059')
 
 prepare() {
     cd ${srcdir}/files
