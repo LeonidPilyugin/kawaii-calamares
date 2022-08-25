@@ -8,12 +8,11 @@ arch=('x86_64')
 depends=('binutils' 'fakeroot' 'gcc' 'boost' 'patch' 'qt5-tools' 'yaml-cpp' 'kpmcore' 'qt5-location' 'icu' 'qt5-declarative' 'qt5-translations' 'qt5-xmlpatterns' 'kiconthemes' 'kservice' 'kio' 'kparts' 'cmake' 'autoconf' 'automake' 'bison' 'flex' 'git' 'libtool' 'm4' 'make' 'extra-cmake-modules' 'appstream-qt' 'squashfs-tools' 'libpwquality' 'python3' 'qt5-webengine')
 url='https://github.com/LeonidPilyugin/kawaii-calamares/tree/main'
 license=('GPL3')
-source=("${pkgname}-${pkgver}.tar.gz::https://github.com/LeonidPilyugin/$pkgname/releases/download/v$pkgver/files.tar.gz")
+source=("$pkgname-$pkgver.tar.gz::https://github.com/LeonidPilyugin/$pkgname/releases/download/v$pkgver/files.tar.gz")
 sha256sums=('2476cd0cdc943ba3324cb61218fde51e19dabb5b3cf2a8b3cb546f04f77eb749')
 
 prepare() {
-    srcdir=$srcdir/files
-    cd ${srcdir}
+    cd ${srcdir}/files
     sed -i -e 's/"Install configuration files" OFF/"Install configuration files" ON/' CMakeLists.txt
     sed -i -e 's/etc\/sddm.conf/etc\/sddm.conf.d\/kde_settings.conf/' src/modules/displaymanager/main.py
     # patches here
@@ -26,7 +25,7 @@ prepare() {
 }
 
 build() {
-    cd ${srcdir}
+    cd ${srcdir}/files
     mkdir -p build
     cd build
         cmake .. \
@@ -43,6 +42,6 @@ build() {
 }
 
 package() {
-    cd ${srcdir}/build
+    cd ${srcdir}/files/build
     make DESTDIR="$pkgdir" install
 }
