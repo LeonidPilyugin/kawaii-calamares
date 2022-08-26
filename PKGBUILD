@@ -4,12 +4,12 @@ pkgname=kawaii-calamares
 pkgver=3.2.60
 pkgrel=1
 pkgdesc='Kawaii installer for MenheraOS'
+url='https://github.com/LeonidPilyugin/kawaii-calamares'
 arch=('x86_64')
 depends=('binutils' 'fakeroot' 'gcc' 'boost' 'patch' 'qt5-tools' 'yaml-cpp' 'kpmcore' 'qt5-location' 'icu' 'qt5-declarative' 'qt5-translations' 'qt5-xmlpatterns' 'kiconthemes' 'kservice' 'kio' 'kparts' 'cmake' 'autoconf' 'automake' 'bison' 'flex' 'git' 'libtool' 'm4' 'make' 'extra-cmake-modules' 'appstream-qt' 'squashfs-tools' 'libpwquality' 'python3' 'qt5-webengine')
-url='https://github.com/LeonidPilyugin/kawaii-calamares/tree/main'
 license=('GPL3')
 source=("$pkgname-$pkgver.tar.gz::https://github.com/LeonidPilyugin/$pkgname/releases/download/v$pkgver/files.tar.gz")
-sha256sums=('f1967fa7ddd8930d87c08076520ee0799c1e3e49f71dc5ee51bfe846b3e35059')
+sha256sums=('2f4cdc3cd9db8acba641d6c46b89f8c41bef8caf5d6a3d0d947408b88481ff7a')
 
 prepare() {
     cd ${srcdir}/files
