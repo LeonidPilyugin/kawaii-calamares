@@ -41,7 +41,7 @@
 # TODO:3.3: Require CMake 3.12
 cmake_minimum_required( VERSION 3.3 FATAL_ERROR )
 project( CALAMARES
-    VERSION 3.2.60
+    VERSION 3.2.61
     LANGUAGES C CXX
 )
 
@@ -54,7 +54,7 @@ endif()
 
 ### OPTIONS
 #
-option( INSTALL_CONFIG "Install configuration files" ON )
+option( INSTALL_CONFIG "Install configuration files" OFF )
 option( INSTALL_POLKIT "Install Polkit configuration" ON )
 option( INSTALL_COMPLETION "Install shell completions" OFF )
 # Options for the calamares executable
@@ -501,7 +501,7 @@ add_feature_info( ExampleDistro ${mksquashfs_FOUND} "Create example-distro targe
 
 ### CALAMARES PROPER
 #
-set( CALAMARES_VERSION 3.2.60-1 )
+set( CALAMARES_VERSION ${CALAMARES_VERSION_MAJOR}.${CALAMARES_VERSION_MINOR}.${CALAMARES_VERSION_PATCH} )
 # In rare cases we have hotfix-releases with a tweak
 if( CALAMARES_VERSION_TWEAK )
     set( CALAMARES_VERSION "${CALAMARES_VERSION}.${CALAMARES_VERSION_TWEAK}" )

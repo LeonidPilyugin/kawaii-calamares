@@ -121,8 +121,7 @@ navigation: widget
 # are visible as buttons there if the corresponding *show* keys
 # are set to "true" (they can also be overridden).
 strings:
-#    productName:         "@{NAME}"
-    productName:         NecoArch
+    productName:         "@{NAME}"
     shortProductName:    Generic
     version:             2020.2 LTS
     shortVersion:        2020.2
@@ -234,7 +233,7 @@ slideshowAPI: 2
 #                else only last (approximately) 'n' KiB of log file will be pasted.
 #                Please note that upload size may be slightly over the limit (due
 #                to last minute logging), so provide a suitable value.
-#uploadServer :
-#    type :    "fiche"
-#    url :     "http://termbin.com:9999"
-#    sizeLimit : -1
+uploadServer :
+    type :    "fiche"
+    url :     "http://termbin.com:9999"
+    sizeLimit : -1

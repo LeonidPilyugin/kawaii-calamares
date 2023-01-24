@@ -10,16 +10,52 @@ website will have to do for older versions.
 
 > Note that the 3.2 series is now in LTS / bug-fix-only mode.
 
-# 3.2.60 (unreleased) #
+# 3.2.61 (2022-08-24) #
+
+This is the second community-maintainence release of Calamares 3.2.
+It corrects a handful of bugs foud in the stable release. There
+are also translation updates.
 
 This release contains contributions from (alphabetically by first name):
- - No external contributors yet
+ - Adriaan de Groot
+ - Anke Boersma
 
 ## Core ##
- - No core changes yet
+ - The "About" and "Debug" buttons in a QWidgets-based panel were no
+   longer translated. This has been fixed (by re-using translations
+   of the same buttons from the QML module. #2030 (Thanks Anke)
 
 ## Modules ##
- - No module changes yet
+ - *bootloader* Python code slipped in that was incompatible with
+   the minimum required Python version. #2033 (Thanks Adriaan)
+ - *locale* fixes a large regression introduced with 3.2.60, where
+   the location picked for many locales was not the same as in 3.2.59,
+   and generally peculiar (e.g. picking "English" led to "en_AG" which
+   is nice if you are in Bermuda, but not expected in the rest of the
+   world). #2008
+ - *luksopenswaphookcfg* Remove duplicate options. #1659 (Thanks Anke)
+
+
+# 3.2.60 (2022-06-19) #
+
+This is the first community-maintainence release of Calamares 3.2.
+Somewhat ironically, all the commits in the branch come from
+Adriaan de Groot -- the community is working in the 3.3 (*calamares*)
+branch.
+
+## Core ##
+ - No core changes
+
+## Modules ##
+ - *fstab* now warns when the mount options are empty (which is non-
+   sensical, and indicates that the configuration is bad).
+ - *locale* does a better job of preserving Catalan (Valencia)
+   across modules; previously it dropped the *Valencia*
+   after the locale module unless you specifically re-selected
+   `ca@valencia` in the locale module. (Reported by Lliurex)
+ - *welcome* now has text labels on the special buttons (nominally,
+   this is part of the core, but the *About* button was always on the
+   welcome page).
 
 
 # 3.2.59 (2022-05-29) #
