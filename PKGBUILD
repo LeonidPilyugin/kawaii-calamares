@@ -9,7 +9,7 @@ arch=('x86_64')
 depends=('binutils' 'fakeroot' 'gcc' 'boost' 'patch' 'qt5-tools' 'yaml-cpp' 'kpmcore' 'qt5-location' 'icu' 'qt5-declarative' 'qt5-translations' 'qt5-xmlpatterns' 'kiconthemes' 'kservice' 'kio' 'kparts' 'cmake' 'autoconf' 'automake' 'bison' 'flex' 'git' 'libtool' 'm4' 'make' 'extra-cmake-modules' 'appstream-qt' 'squashfs-tools' 'libpwquality' 'python3' 'qt5-webengine')
 license=('GPL3')
 source=("$pkgname-$pkgver.tar.gz::https://github.com/LeonidPilyugin/$pkgname/releases/download/v$pkgver/files.tar.gz")
-sha256sums=('25efecfca2e2dcfdd5453a7b5e3fc92523c6ca86cc7cd6ff9954af6ccfcca19c')
+sha256sums=('c9d06bb2cfa48dd37367d2b54bb10e7a241dad61deeb792ccc15662cc9f2787d')
 
 prepare() {
     cd ${srcdir}/files
