@@ -78,7 +78,6 @@ PartitionLayout::PartitionEntry::PartitionEntry( const QString& label,
     PartUtils::canonicalFilesystemName( fs, &partFileSystem );
 }
 
-
 bool
 PartitionLayout::addEntry( const PartitionEntry& entry )
 {
@@ -111,16 +110,16 @@ PartitionLayout::init( FileSystem::Type defaultFsType, const QVariantList& confi
             break;
         }
 
-        if ( !addEntry( { CalamaresUtils::getString( pentry, "name" ),
-                          CalamaresUtils::getString( pentry, "uuid" ),
-                          CalamaresUtils::getString( pentry, "type" ),
-                          CalamaresUtils::getUnsignedInteger( pentry, "attributes", 0 ),
-                          CalamaresUtils::getString( pentry, "mountPoint" ),
-                          CalamaresUtils::getString( pentry, "filesystem", "unformatted" ),
-                          CalamaresUtils::getSubMap( pentry, "features", ok ),
-                          CalamaresUtils::getString( pentry, "size", QStringLiteral( "0" ) ),
-                          CalamaresUtils::getString( pentry, "minSize", QStringLiteral( "0" ) ),
-                          CalamaresUtils::getString( pentry, "maxSize", QStringLiteral( "0" ) ) } ) )
+        if ( !addEntry( { Calamares::getString( pentry, "name" ),
+                          Calamares::getString( pentry, "uuid" ),
+                          Calamares::getString( pentry, "type" ),
+                          Calamares::getUnsignedInteger( pentry, "attributes", 0 ),
+                          Calamares::getString( pentry, "mountPoint" ),
+                          Calamares::getString( pentry, "filesystem", "unformatted" ),
+                          Calamares::getSubMap( pentry, "features", ok ),
+                          Calamares::getString( pentry, "size", QStringLiteral( "0" ) ),
+                          Calamares::getString( pentry, "minSize", QStringLiteral( "0" ) ),
+                          Calamares::getString( pentry, "maxSize", QStringLiteral( "0" ) ) } ) )
         {
             cError() << "Partition layout entry #" << config.indexOf( r ) << "is invalid, switching to default layout.";
             m_partLayout.clear();
@@ -154,11 +153,9 @@ PartitionLayout::setDefaultFsType( FileSystem::Type defaultFsType )
     case FileSystem::Lvm2_PV:
     case FileSystem::Udf:
     case FileSystem::Iso9660:
-#ifdef WITH_KPMCORE4API
     case FileSystem::Luks2:
     case FileSystem::LinuxRaidMember:
     case FileSystem::BitLocker:
-#endif
         // bad bad
         cWarning() << "The selected default FS" << defaultFsType << "is not suitable."
                    << "Using ext4 instead.";
@@ -185,11 +182,9 @@ PartitionLayout::setDefaultFsType( FileSystem::Type defaultFsType )
     case FileSystem::Hpfs:
     case FileSystem::Zfs:
     case FileSystem::Nilfs2:
-#ifdef WITH_KPMCORE4API
     case FileSystem::Fat12:
     case FileSystem::Apfs:
     case FileSystem::Minix:
-#endif
         // weird
         cWarning() << "The selected default FS" << defaultFsType << "is unusual, but not wrong.";
         break;
@@ -203,11 +198,11 @@ PartitionLayout::setDefaultFsType( FileSystem::Type defaultFsType )
     m_defaultFsType = defaultFsType;
 }
 
-
 QList< Partition* >
 PartitionLayout::createPartitions( Device* dev,
                                    qint64 firstSector,
                                    qint64 lastSector,
+                                   Config::LuksGeneration luksFsType,
                                    QString luksPassphrase,
                                    PartitionNode* parent,
                                    const PartitionRole& role )
@@ -235,7 +230,7 @@ PartitionLayout::createPartitions( Device* dev,
         // warnings to ensure that all the cases are covered below.
         // We need to ignore the percent-defined until later
         qint64 sectors = 0;
-        if ( entry.partSize.unit() != CalamaresUtils::Partition::SizeUnit::Percent )
+        if ( entry.partSize.unit() != Calamares::Partition::SizeUnit::Percent )
         {
             sectors = entry.partSize.toSectors( totalSectors, dev->logicalSize() );
         }
@@ -267,7 +262,7 @@ PartitionLayout::createPartitions( Device* dev,
     // Assign sectors for percentage-defined partitions.
     for ( const auto& entry : qAsConst( m_partLayout ) )
     {
-        if ( entry.partSize.unit() == CalamaresUtils::Partition::SizeUnit::Percent )
+        if ( entry.partSize.unit() == Calamares::Partition::SizeUnit::Percent )
         {
             qint64 sectors
                 = entry.partSize.toSectors( availableSectors + partSectorsMap.value( &entry ), dev->logicalSize() );
@@ -321,6 +316,7 @@ PartitionLayout::createPartitions( Device* dev,
                                                             entry.partLabel,
                                                             currentSector,
                                                             currentSector + sectors - 1,
+                                                            luksFsType,
                                                             luksPassphrase,
                                                             KPM_PARTITION_FLAG( None ) );
         }
@@ -355,30 +351,18 @@ PartitionLayout::createPartitions( Device* dev,
         }
         if ( !entry.partType.isEmpty() )
         {
-#if defined( WITH_KPMCORE42API )
             part->setType( entry.partType );
-#else
-            cWarning() << "Ignoring type; requires KPMcore >= 4.2.0.";
-#endif
         }
         if ( entry.partAttributes )
         {
-#if defined( WITH_KPMCORE42API )
             part->setAttributes( entry.partAttributes );
-#else
-            cWarning() << "Ignoring attributes; requires KPMcore >= 4.2.0.";
-#endif
         }
         if ( !entry.partFeatures.isEmpty() )
         {
-#if defined( WITH_KPMCORE42API )
             for ( const auto& k : entry.partFeatures.keys() )
             {
                 part->fileSystem().addFeature( k, entry.partFeatures.value( k ) );
             }
-#else
-            cWarning() << "Ignoring features; requires KPMcore >= 4.2.0.";
-#endif
         }
         // Some buggy (legacy) BIOSes test if the bootflag of at least one partition is set.
         // Otherwise they ignore the device in boot-order, so add it here.

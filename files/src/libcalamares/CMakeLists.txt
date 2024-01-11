@@ -13,23 +13,31 @@
 add_definitions(-DDLLEXPORT_PRO)
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/CalamaresConfig.h.in
-    ${CMAKE_CURRENT_BINARY_DIR}/CalamaresConfig.h
-)
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/CalamaresVersion.h.in
-    ${CMAKE_CURRENT_BINARY_DIR}/CalamaresVersion.h
-)
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/CalamaresVersionX.h.in
-    ${CMAKE_CURRENT_BINARY_DIR}/CalamaresVersionX.h
-)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CalamaresConfig.h.in ${CMAKE_CURRENT_BINARY_DIR}/CalamaresConfig.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CalamaresVersion.h.in ${CMAKE_CURRENT_BINARY_DIR}/CalamaresVersion.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CalamaresVersionX.h.in ${CMAKE_CURRENT_BINARY_DIR}/CalamaresVersionX.h)
 
-set(OPTIONAL_PRIVATE_LIBRARIES "")
-set(OPTIONAL_PUBLIC_LIBRARIES "")
+# Map the available translations names into a suitable constexpr list
+# of names in C++. This gets us Calamares::Locale::availableLanguages,
+# a QStringList of names.
+set(_names_tu
+    "
+#ifndef CALAMARES_TRANSLATIONS_H
+#define CALAMARES_TRANSLATIONS_H
+#include <QStringList>
+namespace {
+static const QStringList availableLanguageList{
+"
+)
+foreach(l ${CALAMARES_TRANSLATION_LANGUAGES})
+    string(APPEND _names_tu "\"${l}\",\n")
+endforeach()
+string(APPEND _names_tu "};\n} // namespace\n#endif\n\n")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/CalamaresTranslations.cc "${_names_tu}")
 
-set(libSources
+add_library(
+    calamares
+    SHARED
     CalamaresAbout.cpp
     CppJob.cpp
     GlobalStorage.cpp
@@ -69,7 +77,6 @@ set(libSources
     partition/PartitionSize.cpp
     partition/Sync.cpp
     # Utility service
-    utils/CalamaresUtilsSystem.cpp
     utils/CommandList.cpp
     utils/Dirs.cpp
     utils/Entropy.cpp
@@ -79,46 +86,51 @@ set(libSources
     utils/Retranslator.cpp
     utils/Runner.cpp
     utils/String.cpp
+    utils/StringExpander.cpp
+    utils/System.cpp
     utils/UMask.cpp
     utils/Variant.cpp
     utils/Yaml.cpp
 )
 
+set_target_properties(
+    calamares
+    PROPERTIES
+        VERSION ${CALAMARES_VERSION_SHORT}
+        SOVERSION ${CALAMARES_SOVERSION}
+        INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_INSTALL_FULL_INCLUDEDIR}/libcalamares
+)
+target_link_libraries(calamares LINK_PUBLIC yamlcpp::yamlcpp ${qtname}::Core ${qtname}::Network)
+target_link_libraries(calamares LINK_PUBLIC ${kfname}::CoreAddons)
+
 ### OPTIONAL Automount support (requires dbus)
 #
 #
-if(Qt5DBus_FOUND)
-    list(APPEND libSources partition/AutoMount.cpp)
-    list(APPEND OPTIONAL_PRIVATE_LIBRARIES Qt5::DBus)
+if(TARGET ${qtname}::DBus)
+    target_sources(calamares PRIVATE partition/AutoMount.cpp)
+    target_link_libraries(calamares PRIVATE ${qtname}::DBus)
 endif()
 
 ### OPTIONAL Python support
 #
 #
 if(WITH_PYTHON)
-    list(APPEND libSources PythonHelper.cpp PythonJob.cpp PythonJobApi.cpp)
-
-    include_directories(${PYTHON_INCLUDE_DIRS})
-    link_directories(${PYTHON_LIBRARIES})
-
-    include_directories(${Boost_INCLUDE_DIRS})
-    link_directories(${Boost_LIBRARY_DIRS})
-
-    list(
-        APPEND
-        OPTIONAL_PRIVATE_LIBRARIES
-        ${PYTHON_LIBRARIES}
-        ${Boost_LIBRARIES}
-    )
+    if(WITH_PYBIND11)
+        target_sources(calamares PRIVATE python/Api.cpp python/PythonJob.cpp)
+        target_link_libraries(calamares PRIVATE Python::Python pybind11::headers)
+    else()
+        target_sources(calamares PRIVATE PythonHelper.cpp PythonJob.cpp PythonJobApi.cpp)
+        target_link_libraries(calamares PRIVATE Python::Python Boost::python)
+    endif()
 endif()
 
 ### OPTIONAL GeoIP XML support
 #
 #
-find_package(Qt5 COMPONENTS Xml)
-if(Qt5Xml_FOUND)
-    list(APPEND libSources geoip/GeoIPXML.cpp)
-    list(APPEND OPTIONAL_PUBLIC_LIBRARIES Qt5::Network Qt5::Xml)
+find_package(${qtname} ${QT_VERSION} COMPONENTS Xml)
+if(TARGET ${qtname}::Xml)
+    target_sources(calamares PRIVATE geoip/GeoIPXML.cpp)
+    target_link_libraries(calamares PRIVATE ${qtname}::Network ${qtname}::Xml)
 endif()
 
 ### OPTIONAL KPMcore support
@@ -127,48 +139,24 @@ endif()
 include(KPMcoreHelper)
 
 if(KPMcore_FOUND)
-    find_package(Qt5 REQUIRED DBus) # Needed for KPMCore
-    find_package(KF5 REQUIRED I18n WidgetsAddons) # Needed for KPMCore
-
-    foreach(d ${KPMcore_API_DEFINITIONS})
-        add_definitions(-D${d})
-    endforeach()
-    include_directories(${KPMCORE_INCLUDE_DIR})
-    list(
-        APPEND
-        libSources
-        partition/FileSystem.cpp
-        partition/KPMManager.cpp
-        partition/PartitionIterator.cpp
-        partition/PartitionQuery.cpp
+    target_sources(
+        calamares
+        PRIVATE
+            partition/FileSystem.cpp
+            partition/KPMManager.cpp
+            partition/PartitionIterator.cpp
+            partition/PartitionQuery.cpp
     )
-    list(APPEND OPTIONAL_PRIVATE_LIBRARIES kpmcore)
 endif()
+# Always, since this also handles the no-KPMcore case; we don't
+# call it calamares::kpmcore because that name exists only
+# when KPMcore is actually found.
+target_link_libraries(calamares PRIVATE calapmcore)
 
 ### LIBRARY
 #
 #
-add_library(calamares SHARED ${libSources})
-set_target_properties(
-    calamares
-    PROPERTIES
-        VERSION ${CALAMARES_VERSION_SHORT}
-        SOVERSION ${CALAMARES_VERSION_SHORT}
-        INTERFACE_INCLUDE_DIRECTORIES
-            ${CMAKE_INSTALL_FULL_INCLUDEDIR}/libcalamares
-)
 calamares_automoc( calamares )
-
-target_link_libraries(
-    calamares
-    LINK_PRIVATE ${OPTIONAL_PRIVATE_LIBRARIES}
-    LINK_PUBLIC
-        yamlcpp::yamlcpp
-        Qt5::Core
-        KF5::CoreAddons
-        ${OPTIONAL_PUBLIC_LIBRARIES}
-)
-
 add_library(Calamares::calamares ALIAS calamares)
 
 ### Installation
@@ -198,10 +186,7 @@ install(
 # Install header files
 file(GLOB rootHeaders "*.h")
 install(
-    FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/CalamaresConfig.h
-        ${CMAKE_CURRENT_BINARY_DIR}/CalamaresVersion.h
-        ${rootHeaders}
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/CalamaresConfig.h ${CMAKE_CURRENT_BINARY_DIR}/CalamaresVersion.h ${rootHeaders}
     DESTINATION include/libcalamares
 )
 # Install each subdir-worth of header files
@@ -210,155 +195,46 @@ foreach(subdir geoip locale modulesystem network partition utils)
     install(FILES ${subdir_headers} DESTINATION include/libcalamares/${subdir})
 endforeach()
 
+### TRANSLATION TESTING
+#
+
+calamares_qrc_translations( localetest OUTPUT_VARIABLE localetest_qrc SUBDIRECTORY testdata LANGUAGES nl )
+
 ### TESTING
 #
 #
-calamares_add_test(
-    libcalamarestest
-    SOURCES
-        Tests.cpp
-)
+calamares_add_test(libcalamarestest SOURCES Tests.cpp)
 
-calamares_add_test(
-    libcalamaresgeoiptest
-    SOURCES
-        geoip/GeoIPTests.cpp
-        ${geoip_src}
-)
+calamares_add_test(libcalamaresgeoiptest SOURCES geoip/GeoIPTests.cpp ${geoip_src})
 
-function(calamares_qrc_translations basename)
-    set(NAME ${ARGV0})
-    set(options "")
-    set(oneValueArgs SUBDIRECTORY OUTPUT_VARIABLE)
-    set(multiValueArgs LANGUAGES)
-    cmake_parse_arguments(
-        _qrt
-        "${options}"
-        "${oneValueArgs}"
-        "${multiValueArgs}"
-        ${ARGN}
-    )
+calamares_add_test(libcalamareslocaletest SOURCES locale/Tests.cpp ${localetest_qrc})
 
-    if(NOT _qrt_OUTPUT_VARIABLE)
-        set(_qrt_OUTPUT_VARIABLE "qrc_translations_${basename}")
-    endif()
+calamares_add_test(libcalamaresmodulesystemtest SOURCES modulesystem/Tests.cpp)
 
-    set(translations_qrc_infile ${CMAKE_CURRENT_BINARY_DIR}/${basename}.qrc)
-    set(translations_qrc_outfile ${CMAKE_CURRENT_BINARY_DIR}/qrc_${basename}.cxx)
+calamares_add_test(libcalamaresnetworktest SOURCES network/Tests.cpp)
 
-    # Must use this variable name because of the @ substitution
-    set(calamares_i18n_qrc_content "")
-    set(calamares_i18n_ts_filelist "")
-    foreach(lang ${_qrt_LANGUAGES})
-        string(
-            APPEND
-            calamares_i18n_qrc_content
-            "<file>${basename}_${lang}.qm</file>"
-        )
-        list(
-            APPEND
-            calamares_i18n_ts_filelist
-            "${CMAKE_CURRENT_SOURCE_DIR}/${_qrt_SUBDIRECTORY}/${basename}_${lang}.ts"
-        )
-    endforeach()
-
-    configure_file(
-        ${CMAKE_SOURCE_DIR}/lang/calamares_i18n.qrc.in
-        ${translations_qrc_infile}
-        @ONLY
-    )
-    qt5_add_translation(QM_FILES ${calamares_i18n_ts_filelist})
-
-    # Run the resource compiler (rcc_options should already be set)
-    add_custom_command(
-        OUTPUT ${translations_qrc_outfile}
-        COMMAND "${Qt5Core_RCC_EXECUTABLE}"
-        ARGS
-            ${rcc_options}
-            --format-version
-            1
-            -name
-            ${basename}
-            -o
-            ${translations_qrc_outfile}
-            ${translations_qrc_infile}
-        MAIN_DEPENDENCY ${translations_qrc_infile}
-        DEPENDS ${QM_FILES}
-    )
-
-    set(${_qrt_OUTPUT_VARIABLE} ${translations_qrc_outfile} PARENT_SCOPE)
-endfunction()
-
-calamares_qrc_translations(localetest OUTPUT_VARIABLE localetest_qrc SUBDIRECTORY testdata LANGUAGES nl)
-calamares_add_test(
-    libcalamareslocaletest
-    SOURCES
-        locale/Tests.cpp
-        ${localetest_qrc}
-)
-
-calamares_add_test(
-    libcalamaresmodulesystemtest
-    SOURCES
-        modulesystem/Tests.cpp
-)
-
-calamares_add_test(
-    libcalamaresnetworktest
-    SOURCES
-        network/Tests.cpp
-)
-
-calamares_add_test(
-    libcalamarespackagestest
-    SOURCES
-        packages/Tests.cpp
-)
-
-calamares_add_test(
-    libcalamarespartitiontest
-    SOURCES
-        partition/Global.cpp
-        partition/Tests.cpp
-    LIBRARIES
-        ${OPTIONAL_PRIVATE_LIBRARIES}
-)
+calamares_add_test(libcalamarespackagestest SOURCES packages/Tests.cpp)
 
 if(KPMcore_FOUND)
     calamares_add_test(
-        libcalamarespartitionkpmtest
-        SOURCES
-            partition/KPMTests.cpp
-        LIBRARIES
-            ${OPTIONAL_PRIVATE_LIBRARIES}
+        libcalamarespartitiontest
+        SOURCES partition/Global.cpp partition/Tests.cpp
+        LIBRARIES calamares::kpmcore
     )
+    calamares_add_test(libcalamarespartitionkpmtest SOURCES partition/KPMTests.cpp LIBRARIES calamares::kpmcore)
 endif()
 
-calamares_add_test(
-    libcalamaresutilstest
-    SOURCES
-        utils/Tests.cpp
-        utils/Runner.cpp
-)
+calamares_add_test(libcalamaresutilstest SOURCES utils/Tests.cpp utils/Runner.cpp)
 
-calamares_add_test(
-    libcalamaresutilspathstest
-    SOURCES
-        utils/TestPaths.cpp
-)
+calamares_add_test(libcalamaresutilspathstest SOURCES utils/TestPaths.cpp)
 
 # This is not an actual test, it's a test / demo application
 # for experimenting with GeoIP.
 add_executable(test_geoip geoip/test_geoip.cpp ${geoip_src})
-target_link_libraries(
-    test_geoip
-    Calamares::calamares
-    Qt5::Network
-    yamlcpp::yamlcpp
-)
+target_link_libraries(test_geoip Calamares::calamares ${qtname}::Network yamlcpp::yamlcpp)
 calamares_automoc( test_geoip )
 
-if(Qt5DBus_FOUND)
+if(TARGET ${qtname}::DBus)
     add_executable(test_automount partition/calautomount.cpp)
-    target_link_libraries(test_automount Calamares::calamares Qt5::DBus)
+    target_link_libraries(test_automount Calamares::calamares ${qtname}::DBus)
 endif()

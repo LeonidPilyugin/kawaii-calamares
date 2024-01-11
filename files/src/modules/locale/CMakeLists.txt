@@ -18,7 +18,6 @@ calamares_add_plugin(locale
     TYPE viewmodule
     EXPORT_MACRO PLUGINDLLEXPORT_PRO
     SOURCES
-        ${geoip_src}
         Config.cpp
         LCLocaleDialog.cpp
         LocaleConfiguration.cpp
@@ -32,15 +31,20 @@ calamares_add_plugin(locale
     RESOURCES
         locale.qrc
     LINK_PRIVATE_LIBRARIES
-        Qt5::Network
-        ${geoip_libs}
+        ${qtname}::Network
         yamlcpp::yamlcpp
     SHARED_LIB
 )
 
 calamares_add_test(
     localetest
-    SOURCES Tests.cpp Config.cpp LocaleConfiguration.cpp LocaleNames.cpp SetTimezoneJob.cpp timezonewidget/TimeZoneImage.cpp
+    SOURCES
+        Tests.cpp
+        Config.cpp
+        LocaleConfiguration.cpp
+        LocaleNames.cpp
+        SetTimezoneJob.cpp
+        timezonewidget/TimeZoneImage.cpp
     DEFINITIONS SOURCE_DIR="${CMAKE_CURRENT_LIST_DIR}/images" DEBUG_TIMEZONES=1
-    LIBRARIES Qt5::Gui
+    LIBRARIES ${qtname}::Gui
 )

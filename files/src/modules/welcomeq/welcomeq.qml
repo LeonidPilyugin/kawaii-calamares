@@ -13,9 +13,12 @@ import io.calamares.ui 1.0
 import QtQuick 2.10
 import QtQuick.Controls 2.10
 import QtQuick.Layouts 1.3
+import QtQuick.Window 2.3
+
+// Qt5 requires versioned imports
+//
 import org.kde.kirigami 2.7 as Kirigami
 import QtGraphicalEffects 1.0
-import QtQuick.Window 2.3
 
 Page
 {
@@ -30,7 +33,7 @@ Page
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.top: parent.top
             horizontalAlignment: Text.AlignHCenter
-            padding: 40
+            padding: 20
             // In QML, QString::arg() only takes one argument
             text: qsTr("<h3>Welcome to the %1 <quote>%2</quote> installer</h3>
             <p>This program will ask you some questions and set up %1 on your computer.</p>").arg(Branding.string(Branding.ProductName)).arg(Branding.string(Branding.Version))

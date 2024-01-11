@@ -23,34 +23,19 @@ foreach(SUBDIRECTORY ${SUBDIRECTORIES})
 
         # We glob all the files inside the subdirectory, and we make sure they are
         # synced with the bindir structure and installed.
-        file(
-            GLOB QML_MODULE_FILES
-            RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/${SUBDIRECTORY}
-            "${SUBDIRECTORY}/*"
-        )
+        file(GLOB QML_MODULE_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/${SUBDIRECTORY} "${SUBDIRECTORY}/*")
         foreach(QML_MODULE_FILE ${QML_MODULE_FILES})
-            if(
-                NOT
-                    IS_DIRECTORY
-                        ${CMAKE_CURRENT_SOURCE_DIR}/${SUBDIRECTORY}/${QML_MODULE_FILE}
-            )
-                configure_file(
-                    ${SUBDIRECTORY}/${QML_MODULE_FILE}
-                    ${SUBDIRECTORY}/${QML_MODULE_FILE}
-                    COPYONLY
-                )
+            if(NOT IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${SUBDIRECTORY}/${QML_MODULE_FILE})
+                configure_file(${SUBDIRECTORY}/${QML_MODULE_FILE} ${SUBDIRECTORY}/${QML_MODULE_FILE} COPYONLY)
 
                 install(
-                    FILES
-                        ${CMAKE_CURRENT_BINARY_DIR}/${SUBDIRECTORY}/${QML_MODULE_FILE}
+                    FILES ${CMAKE_CURRENT_BINARY_DIR}/${SUBDIRECTORY}/${QML_MODULE_FILE}
                     DESTINATION ${QML_MODULE_DESTINATION}
                 )
             endif()
         endforeach()
 
-        message(
-            "-- ${BoldYellow}Configured QML module: ${BoldRed}calamares.${SUBDIRECTORY}${ColorReset}"
-        )
+        message("-- ${BoldYellow}Configured QML module: ${BoldRed}calamares.${SUBDIRECTORY}${ColorReset}")
     endif()
 endforeach()
 

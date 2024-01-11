@@ -12,6 +12,7 @@
 #ifndef PARTITIONCOREMODULE_H
 #define PARTITIONCOREMODULE_H
 
+#include "Config.h"
 #include "core/KPMHelpers.h"
 #include "core/PartitionLayout.h"
 #include "core/PartitionModel.h"
@@ -166,10 +167,15 @@ public:
      */
     PartitionLayout& partitionLayout() { return m_partLayout; }
 
-    void layoutApply( Device* dev, qint64 firstSector, qint64 lastSector, QString luksPassphrase );
     void layoutApply( Device* dev,
                       qint64 firstSector,
                       qint64 lastSector,
+                      Config::LuksGeneration luksFsType,
+                      QString luksPassphrase );
+    void layoutApply( Device* dev,
+                      qint64 firstSector,
+                      qint64 lastSector,
+                      Config::LuksGeneration luksFsType,
                       QString luksPassphrase,
                       PartitionNode* parent,
                       const PartitionRole& role );
@@ -251,7 +257,7 @@ private:
 
     DeviceInfo* infoForDevice( const Device* ) const;
 
-    CalamaresUtils::Partition::KPMManager m_kpmcore;
+    Calamares::Partition::KPMManager m_kpmcore;
 
     QList< DeviceInfo* > m_deviceInfos;
     QList< Partition* > m_efiSystemPartitions;

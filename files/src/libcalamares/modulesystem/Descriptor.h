@@ -42,7 +42,6 @@ enum class Interface
     QtPlugin,  // Jobs or Views
     Python,  // Jobs only
     Process,  // Deprecated interface
-    PythonQt  // Views only, available as enum even if PythonQt isn't used
 };
 const NamedEnumTable< Interface >& interfaceNames();
 
@@ -112,10 +111,7 @@ public:
      *
      * Python job modules have one specific script to load and run.
      */
-    QString script() const
-    {
-        return ( m_interface == Interface::Python || m_interface == Interface::PythonQt ) ? m_script : QString();
-    }
+    QString script() const { return m_interface == Interface::Python ? m_script : QString(); }
 
 private:
     QString m_name;
