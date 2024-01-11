@@ -28,7 +28,7 @@ license=(
 	'MIT'
 	)
 source=("$pkgname-$pkgver.tar.gz::https://github.com/LeonidPilyugin/$pkgname/releases/download/v$pkgver/files.tar.gz")
-sha256sums=('3389bd8db953ab82b662bd028f4d24833665dc1c425cc80163cea61daaa28c33')
+sha256sums=('47f49a18f91ec33dc224eb6ab39028790bf0c793c7c080403568d70fe672a6a6')
 
 prepare() {
     cd ${srcdir}/files
