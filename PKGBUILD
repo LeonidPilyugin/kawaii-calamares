@@ -12,7 +12,7 @@ depends=(
 	'gtk-update-icon-cache'
 	'hwinfo'
 	'icu'
-	'kpmcore>=24.01.75'
+	'kpmcore'
 	'libpwquality'
 	'mkinitcpio-openswap'
 	'squashfs-tools'
