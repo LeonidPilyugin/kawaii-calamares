@@ -19,7 +19,7 @@
 namespace Ui
 {
 class WelcomePage;
-}  // namespace Ui
+}
 
 class CheckerContainer;
 class Config;
@@ -63,7 +63,7 @@ private:
 
     Ui::WelcomePage* ui;
     CheckerContainer* m_checkingWidget;
-    Calamares::Locale::TranslationsModel* m_languages;
+    CalamaresUtils::Locale::TranslationsModel* m_languages;
 
     Config* m_conf;
 };

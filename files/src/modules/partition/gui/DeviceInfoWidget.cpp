@@ -11,7 +11,7 @@
 
 #include "GlobalStorage.h"
 #include "JobQueue.h"
-#include "utils/Gui.h"
+#include "utils/CalamaresUtilsGui.h"
 #include "utils/Logger.h"
 #include "utils/QtCompat.h"
 #include "utils/Retranslator.h"
@@ -29,20 +29,21 @@ DeviceInfoWidget::DeviceInfoWidget( QWidget* parent )
     QHBoxLayout* mainLayout = new QHBoxLayout;
     setLayout( mainLayout );
 
-    Calamares::unmarginLayout( mainLayout );
+    CalamaresUtils::unmarginLayout( mainLayout );
     m_ptLabel->setObjectName( "deviceInfoLabel" );
     m_ptIcon->setObjectName( "deviceInfoIcon" );
     mainLayout->addWidget( m_ptIcon );
     mainLayout->addWidget( m_ptLabel );
 
-    QSize iconSize = Calamares::defaultIconSize();
+    QSize iconSize = CalamaresUtils::defaultIconSize();
 
     m_ptIcon->setMargin( 0 );
     m_ptIcon->setFixedSize( iconSize );
-    m_ptIcon->setPixmap( Calamares::defaultPixmap( Calamares::PartitionTable, Calamares::Original, iconSize ) );
+    m_ptIcon->setPixmap(
+        CalamaresUtils::defaultPixmap( CalamaresUtils::PartitionTable, CalamaresUtils::Original, iconSize ) );
 
     QFontMetrics fm = QFontMetrics( QFont() );
-    m_ptLabel->setMinimumWidth( fm.boundingRect( "Amiga" ).width() + Calamares::defaultFontHeight() / 2 );
+    m_ptLabel->setMinimumWidth( fm.boundingRect( "Amiga" ).width() + CalamaresUtils::defaultFontHeight() / 2 );
     m_ptLabel->setAlignment( Qt::AlignCenter );
 
     QPalette palette;
@@ -55,6 +56,7 @@ DeviceInfoWidget::DeviceInfoWidget( QWidget* parent )
 
     CALAMARES_RETRANSLATE_SLOT( &DeviceInfoWidget::retranslateUi );
 }
+
 
 void
 DeviceInfoWidget::setPartitionTableType( PartitionTable::TableType type )
@@ -98,7 +100,9 @@ DeviceInfoWidget::retranslateUi()
                             "that makes a file accessible as a block device. "
                             "This kind of setup usually only contains a single filesystem." );
         break;
+#if defined( WITH_KPMCORE42API )
     case PartitionTable::none:
+#endif
     case PartitionTable::unknownTableType:
         typeString = " ? ";
         toolTipString = tr( "This installer <strong>cannot detect a partition table</strong> on the "

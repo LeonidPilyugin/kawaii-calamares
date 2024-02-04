@@ -3,7 +3,7 @@
 ---
 overwrite: true
 prefer_grub_d: true
-keep_distributor: false
+keepDistributor: false
 defaults:
     GRUB_TIMEOUT: 5
     GRUB_DEFAULT: "saved"

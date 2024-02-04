@@ -15,6 +15,7 @@ calamares_add_test(
     contextualprocesstest
     SOURCES
         Tests.cpp
-        ContextualProcessJob.cpp # Builds it a second time
-    LIBRARIES yamlcpp::yamlcpp
+        ContextualProcessJob.cpp  # Builds it a second time
+    LIBRARIES
+        yamlcpp::yamlcpp
 )

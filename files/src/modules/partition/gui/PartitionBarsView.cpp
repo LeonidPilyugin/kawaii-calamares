@@ -12,7 +12,7 @@
 #include "core/ColorUtils.h"
 #include "core/PartitionModel.h"
 
-#include "utils/Gui.h"
+#include "utils/CalamaresUtilsGui.h"
 #include "utils/Logger.h"
 
 #include <kpmcore/core/device.h>
@@ -22,8 +22,10 @@
 #include <QMouseEvent>
 #include <QPainter>
 
-static const int VIEW_HEIGHT = qMax( Calamares::defaultFontHeight() + 8,  // wins out with big fonts
-                                     int( Calamares::defaultFontHeight() * 0.6 ) + 22 );  // wins out with small fonts
+
+static const int VIEW_HEIGHT
+    = qMax( CalamaresUtils::defaultFontHeight() + 8,  // wins out with big fonts
+            int( CalamaresUtils::defaultFontHeight() * 0.6 ) + 22 );  // wins out with small fonts
 static constexpr int CORNER_RADIUS = 3;
 static const int EXTENDED_PARTITION_MARGIN = qMax( 4, VIEW_HEIGHT / 6 );
 
@@ -37,6 +39,7 @@ static const int EXTENDED_PARTITION_MARGIN = qMax( 4, VIEW_HEIGHT / 6 );
 // 1px outer rect, 1 px gap, 1px selection rect, 1px gap, 1px extended partition rect.
 static const int SELECTION_MARGIN
     = qMin( ( EXTENDED_PARTITION_MARGIN - 2 ) / 2, ( EXTENDED_PARTITION_MARGIN - 2 ) - 2 );
+
 
 PartitionBarsView::PartitionBarsView( QWidget* parent )
     : QAbstractItemView( parent )
@@ -58,7 +61,9 @@ PartitionBarsView::PartitionBarsView( QWidget* parent )
     setMouseTracking( true );
 }
 
+
 PartitionBarsView::~PartitionBarsView() {}
+
 
 void
 PartitionBarsView::setNestedPartitionsMode( PartitionBarsView::NestedPartitionsMode mode )
@@ -67,17 +72,20 @@ PartitionBarsView::setNestedPartitionsMode( PartitionBarsView::NestedPartitionsM
     viewport()->repaint();
 }
 
+
 QSize
 PartitionBarsView::minimumSizeHint() const
 {
     return sizeHint();
 }
 
+
 QSize
 PartitionBarsView::sizeHint() const
 {
     return QSize( -1, VIEW_HEIGHT );
 }
+
 
 void
 PartitionBarsView::paintEvent( QPaintEvent* event )
@@ -94,6 +102,7 @@ PartitionBarsView::paintEvent( QPaintEvent* event )
     painter.restore();
 }
 
+
 void
 PartitionBarsView::drawSection( QPainter* painter, const QRect& rect_, int x, int width, const QModelIndex& index )
 {
@@ -109,6 +118,7 @@ PartitionBarsView::drawSection( QPainter* painter, const QRect& rect_, int x, in
     painter->translate( 0.5, 0.5 );
 
     rect.adjust( 0, 0, -1, -1 );
+
 
     if ( selectionMode() != QAbstractItemView::NoSelection &&  // no hover without selection
          m_hoveredIndex.isValid() && index == m_hoveredIndex )
@@ -181,6 +191,7 @@ PartitionBarsView::drawSection( QPainter* painter, const QRect& rect_, int x, in
     painter->translate( -0.5, -0.5 );
 }
 
+
 void
 PartitionBarsView::drawPartitions( QPainter* painter, const QRect& rect, const QModelIndex& parent )
 {
@@ -229,11 +240,13 @@ PartitionBarsView::drawPartitions( QPainter* painter, const QRect& rect, const Q
     }
 }
 
+
 QModelIndex
 PartitionBarsView::indexAt( const QPoint& point ) const
 {
     return indexAt( point, rect(), QModelIndex() );
 }
+
 
 QModelIndex
 PartitionBarsView::indexAt( const QPoint& point, const QRect& rect, const QModelIndex& parent ) const
@@ -290,11 +303,13 @@ PartitionBarsView::indexAt( const QPoint& point, const QRect& rect, const QModel
     return QModelIndex();
 }
 
+
 QRect
 PartitionBarsView::visualRect( const QModelIndex& index ) const
 {
     return visualRect( index, rect(), QModelIndex() );
 }
+
 
 QRect
 PartitionBarsView::visualRect( const QModelIndex& index, const QRect& rect, const QModelIndex& parent ) const
@@ -351,11 +366,13 @@ PartitionBarsView::visualRect( const QModelIndex& index, const QRect& rect, cons
     return QRect();
 }
 
+
 QRegion
 PartitionBarsView::visualRegionForSelection( const QItemSelection& selection ) const
 {
     return QRegion();
 }
+
 
 int
 PartitionBarsView::horizontalOffset() const
@@ -363,11 +380,13 @@ PartitionBarsView::horizontalOffset() const
     return 0;
 }
 
+
 int
 PartitionBarsView::verticalOffset() const
 {
     return 0;
 }
+
 
 void
 PartitionBarsView::scrollTo( const QModelIndex& index, ScrollHint hint )
@@ -376,6 +395,7 @@ PartitionBarsView::scrollTo( const QModelIndex& index, ScrollHint hint )
     Q_UNUSED( hint )
 }
 
+
 void
 PartitionBarsView::setSelectionModel( QItemSelectionModel* selectionModel )
 {
@@ -383,11 +403,13 @@ PartitionBarsView::setSelectionModel( QItemSelectionModel* selectionModel )
     connect( selectionModel, &QItemSelectionModel::selectionChanged, this, [ = ] { viewport()->repaint(); } );
 }
 
+
 void
 PartitionBarsView::setSelectionFilter( std::function< bool( const QModelIndex& ) > canBeSelected )
 {
     this->canBeSelected = canBeSelected;
 }
+
 
 QModelIndex
 PartitionBarsView::moveCursor( CursorAction, Qt::KeyboardModifiers )
@@ -395,11 +417,13 @@ PartitionBarsView::moveCursor( CursorAction, Qt::KeyboardModifiers )
     return QModelIndex();
 }
 
+
 bool
 PartitionBarsView::isIndexHidden( const QModelIndex& ) const
 {
     return false;
 }
+
 
 void
 PartitionBarsView::setSelection( const QRect& rect, QItemSelectionModel::SelectionFlags flags )
@@ -429,6 +453,7 @@ PartitionBarsView::setSelection( const QRect& rect, QItemSelectionModel::Selecti
 
     viewport()->repaint();
 }
+
 
 void
 PartitionBarsView::mouseMoveEvent( QMouseEvent* event )
@@ -460,6 +485,7 @@ PartitionBarsView::mouseMoveEvent( QMouseEvent* event )
     }
 }
 
+
 void
 PartitionBarsView::leaveEvent( QEvent* )
 {
@@ -470,6 +496,7 @@ PartitionBarsView::leaveEvent( QEvent* )
         viewport()->repaint();
     }
 }
+
 
 void
 PartitionBarsView::mousePressEvent( QMouseEvent* event )
@@ -485,11 +512,13 @@ PartitionBarsView::mousePressEvent( QMouseEvent* event )
     }
 }
 
+
 void
 PartitionBarsView::updateGeometries()
 {
     updateGeometry();  //get a new rect() for redrawing all the labels
 }
+
 
 QPair< QVector< PartitionBarsView::Item >, qreal >
 PartitionBarsView::computeItemsVector( const QModelIndex& parent ) const

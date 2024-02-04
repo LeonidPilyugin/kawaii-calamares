@@ -22,7 +22,7 @@
 #include "GlobalStorage.h"
 #include "JobQueue.h"
 #include "Settings.h"
-#include "utils/Gui.h"
+#include "utils/CalamaresUtilsGui.h"
 #include "utils/Logger.h"
 #include "utils/Retranslator.h"
 #include "utils/String.h"
@@ -34,10 +34,10 @@
 
 /** @brief Add an error message and pixmap to a label. */
 static inline void
-labelError( QLabel* pix, QLabel* label, Calamares::ImageType icon, const QString& message )
+labelError( QLabel* pix, QLabel* label, CalamaresUtils::ImageType icon, const QString& message )
 {
     label->setText( message );
-    pix->setPixmap( Calamares::defaultPixmap( icon, Calamares::Original, label->size() ) );
+    pix->setPixmap( CalamaresUtils::defaultPixmap( icon, CalamaresUtils::Original, label->size() ) );
 }
 
 /** @brief Clear error, set happy pixmap on a label to indicate "ok". */
@@ -45,7 +45,8 @@ static inline void
 labelOk( QLabel* pix, QLabel* label )
 {
     label->clear();
-    pix->setPixmap( Calamares::defaultPixmap( Calamares::StatusOk, Calamares::Original, label->size() ) );
+    pix->setPixmap(
+        CalamaresUtils::defaultPixmap( CalamaresUtils::StatusOk, CalamaresUtils::Original, label->size() ) );
 }
 
 /** @brief Sets error or ok on a label depending on @p status and @p value
@@ -72,7 +73,7 @@ labelStatus( QLabel* pix, QLabel* label, const QString& value, const QString& st
     }
     else
     {
-        labelError( pix, label, Calamares::ImageType::StatusError, status );
+        labelError( pix, label, CalamaresUtils::ImageType::StatusError, status );
     }
 }
 
@@ -203,6 +204,7 @@ UsersPage::retranslate()
     reportRootPasswordStatus( rp.first, rp.second );
 }
 
+
 void
 UsersPage::onActivate()
 {
@@ -212,6 +214,7 @@ UsersPage::onActivate()
     const auto rp = m_config->rootPasswordStatus();
     reportRootPasswordStatus( rp.first, rp.second );
 }
+
 
 void
 UsersPage::onFullNameTextEdited( const QString& fullName )
@@ -240,11 +243,11 @@ passwordStatus( QLabel* iconLabel, QLabel* messageLabel, int validity, const QSt
         labelOk( iconLabel, messageLabel );
         break;
     case Config::PasswordValidity::Weak:
-        labelError( iconLabel, messageLabel, Calamares::StatusWarning, message );
+        labelError( iconLabel, messageLabel, CalamaresUtils::StatusWarning, message );
         break;
     case Config::PasswordValidity::Invalid:
     default:
-        labelError( iconLabel, messageLabel, Calamares::StatusError, message );
+        labelError( iconLabel, messageLabel, CalamaresUtils::StatusError, message );
         break;
     }
 }
@@ -260,6 +263,7 @@ UsersPage::reportUserPasswordStatus( int validity, const QString& message )
 {
     passwordStatus( ui->labelUserPassword, ui->labelUserPasswordError, validity, message );
 }
+
 
 void
 UsersPage::onReuseUserPasswordChanged( const int checked )

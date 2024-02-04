@@ -19,16 +19,19 @@
 #include <QPair>
 #include <QString>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 class CommandList;
-class GlobalStorage;
-}  // namespace Calamares
-
-struct ValueCheck : public QPair< QString, Calamares::CommandList* >
+}
+namespace Calamares
 {
-    ValueCheck( const QString& value, Calamares::CommandList* commands )
-        : QPair< QString, Calamares::CommandList* >( value, commands )
+class GlobalStorage;
+}
+
+struct ValueCheck : public QPair< QString, CalamaresUtils::CommandList* >
+{
+    ValueCheck( const QString& value, CalamaresUtils::CommandList* commands )
+        : QPair< QString, CalamaresUtils::CommandList* >( value, commands )
     {
     }
 
@@ -41,7 +44,7 @@ struct ValueCheck : public QPair< QString, Calamares::CommandList* >
     // by) pass-by-value in QList::append().
 
     QString value() const { return first; }
-    Calamares::CommandList* commands() const { return second; }
+    CalamaresUtils::CommandList* commands() const { return second; }
 };
 
 class ContextualProcessBinding
@@ -62,7 +65,7 @@ public:
      *
      * Ownership of the CommandList passes to this binding.
      */
-    void append( const QString& value, Calamares::CommandList* commands );
+    void append( const QString& value, CalamaresUtils::CommandList* commands );
 
     ///@brief The bound variable has @p value , run the associated commands.
     Calamares::JobResult run( const QString& value ) const;
@@ -78,7 +81,8 @@ public:
 private:
     QString m_variable;
     QList< ValueCheck > m_checks;
-    Calamares::CommandList* m_wildcard = nullptr;
+    CalamaresUtils::CommandList* m_wildcard = nullptr;
 };
+
 
 #endif

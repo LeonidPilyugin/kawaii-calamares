@@ -27,7 +27,7 @@ class Partition;
 namespace Logger
 {
 class Once;
-}  // namespace Logger
+}
 
 namespace PartUtils
 {
@@ -78,11 +78,6 @@ bool canBeResized( DeviceModel* dm, const QString& partitionPath, const Logger::
 OsproberEntryList runOsprober( DeviceModel* dm );
 
 /**
- * @brief Is this an ARM-based system? Set in the configuration file
- */
-bool isArmSystem();
-
-/**
  * @brief Is this system EFI-enabled? Decides based on /sys/firmware/efi
  */
 bool isEfiSystem();
@@ -95,15 +90,9 @@ bool isEfiFilesystemSuitableType( const Partition* candidate );
 
 /**
  * @brief Is the @p partition suitable as an EFI boot partition?
- * Checks for filesystem size (300MiB, see efi.recommendedSize).
+ * Checks for filesystem size (300MiB, see efiFilesystemMinimumSize).
  */
-bool isEfiFilesystemRecommendedSize( const Partition* candidate );
-
-/**
- * @brief Is the @p candidate suitable as an EFI boot partition?
- * Checks for filesystem size (32MiB at least, see efi.minimumSize).
- */
-bool isEfiFilesystemMinimumSize( const Partition* candidate );
+bool isEfiFilesystemSuitableSize( const Partition* candidate );
 
 /** @brief Returns the minimum size of an EFI boot partition in bytes.
  *
@@ -113,24 +102,12 @@ bool isEfiFilesystemMinimumSize( const Partition* candidate );
  * by the standard and how all of those are different).
  *
  * This can be configured through the `partition.conf` file,
- * key *efi.recommendedSize*, which will then apply to both
+ * key *efiSystemPartitionSize*, which will then apply to both
  * automatic partitioning **and** the warning for manual partitioning.
  *
  * A minimum of 32MiB (which is bonkers-small) is enforced.
  */
-qint64 efiFilesystemRecommendedSize();
-
-// Helper for consistency: the GS key used to share the recommended size
-QString efiFilesystemRecommendedSizeGSKey();
-
-/** @brief Returns the hard-minimum size of an EFI boot partition in bytes.
- *
- * This is 32MiB, based on the FAT32 standard and EFI documentation.
- */
-qint64 efiFilesystemMinimumSize();
-
-// Helper for consistency: the GS key used to share the minimum size
-QString efiFilesystemMinimumSizeGSKey();
+size_t efiFilesystemMinimumSize();
 
 /**
  * @brief Is the given @p partition bootable in EFI? Depending on

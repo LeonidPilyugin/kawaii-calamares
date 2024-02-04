@@ -25,7 +25,7 @@
 #include <QMap>
 #include <QVariant>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 namespace Locale
 {
@@ -99,6 +99,6 @@ private:
     const char* m_context = nullptr;
 };
 }  // namespace Locale
-}  // namespace Calamares
+}  // namespace CalamaresUtils
 
 #endif

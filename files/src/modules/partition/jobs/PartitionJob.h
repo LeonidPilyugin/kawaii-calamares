@@ -36,7 +36,7 @@ public slots:
     void iprogress( int percent );
 
 protected:
-    Calamares::Partition::KPMManager m_kpmcore;
+    CalamaresUtils::Partition::KPMManager m_kpmcore;
     Partition* m_partition;
 };
 

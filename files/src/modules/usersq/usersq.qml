@@ -60,7 +60,7 @@ Kirigami.ScrollablePage {
                 id: _userNameField
                 width: parent.width
                 enabled: config.isEditable("fullName")
-                placeholderText: qsTr("Your full name")
+                placeholderText: qsTr("Your Full Name")
                 text: config.fullName
                 onTextChanged: config.setFullName(text)
 
@@ -84,7 +84,7 @@ Kirigami.ScrollablePage {
                 id: _userLoginField
                 width: parent.width
                 enabled: config.isEditable("loginName")
-                placeholderText: qsTr("Login name")
+                placeholderText: qsTr("Login Name")
                 text: config.loginName
                 validator: RegularExpressionValidator { regularExpression: /[a-z_][a-z0-9_-]*[$]?$/ }
 
@@ -150,7 +150,7 @@ Kirigami.ScrollablePage {
             TextField {
                 id: _hostName
                 width: parent.width
-                placeholderText: qsTr("Computer name")
+                placeholderText: qsTr("Computer Name")
                 text: config.hostname
                 validator: RegularExpressionValidator { regularExpression: /[a-zA-Z0-9][-a-zA-Z0-9_]+/ }
 
@@ -235,7 +235,7 @@ Kirigami.ScrollablePage {
                 TextField {
                     id: _verificationPasswordField
                     width: parent.width / 2 - 10
-                    placeholderText: qsTr("Repeat password")
+                    placeholderText: qsTr("Repeat Password")
                     text: config.userPasswordSecondary
 
                     onTextChanged: _passwordField.text === _verificationPasswordField.text
@@ -325,7 +325,7 @@ Kirigami.ScrollablePage {
                 TextField {
                     id: _rootPasswordField
                     width: parent.width / 2 -10
-                    placeholderText: qsTr("Root password")
+                    placeholderText: qsTr("Root Password")
                     text: config.rootPassword
 
                     onTextChanged: config.setRootPassword(text)
@@ -343,7 +343,7 @@ Kirigami.ScrollablePage {
                 TextField {
                     id: _verificationRootPasswordField
                     width: parent.width / 2 -10
-                    placeholderText: qsTr("Repeat root password")
+                    placeholderText: qsTr("Repeat Root Password")
                     text: config.rootPasswordSecondary
 
                     onTextChanged: _rootPasswordField.text === _verificationRootPasswordField.text

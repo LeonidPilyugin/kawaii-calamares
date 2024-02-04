@@ -12,7 +12,7 @@
 #include "utils/Logger.h"
 #include "utils/String.h"
 
-namespace Calamares
+namespace CalamaresUtils
 {
 namespace GeoIP
 {
@@ -43,4 +43,4 @@ splitTZString( const QString& tz )
 }
 
 }  // namespace GeoIP
-}  // namespace Calamares
+}  // namespace CalamaresUtils

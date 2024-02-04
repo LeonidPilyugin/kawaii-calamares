@@ -19,14 +19,14 @@
 
 #include <QtTest/QtTest>
 
-using namespace Calamares::Units;
+using namespace CalamaresUtils::Units;
 
 class PartitionTable;
 class SmartStatus;
 
 QTEST_GUILESS_MAIN( CreateLayoutsTests )
 
-static Calamares::Partition::KPMManager* kpmcore = nullptr;
+static CalamaresUtils::Partition::KPMManager* kpmcore = nullptr;
 static Calamares::JobQueue* jobqueue = nullptr;
 
 #define LOGICAL_SIZE 512
@@ -40,7 +40,7 @@ void
 CreateLayoutsTests::init()
 {
     jobqueue = new Calamares::JobQueue( nullptr );
-    kpmcore = new Calamares::Partition::KPMManager();
+    kpmcore = new CalamaresUtils::Partition::KPMManager();
 }
 
 void
@@ -63,8 +63,8 @@ CreateLayoutsTests::testFixedSizePartition()
         QFAIL( qPrintable( "Unable to create / partition" ) );
     }
 
-    partitions = layout.createPartitions(
-        static_cast< Device* >( &dev ), 0, dev.totalLogical(), Config::LuksGeneration::Luks1, nullptr, nullptr, role );
+    partitions
+        = layout.createPartitions( static_cast< Device* >( &dev ), 0, dev.totalLogical(), nullptr, nullptr, role );
 
     QCOMPARE( partitions.count(), 1 );
 
@@ -84,8 +84,8 @@ CreateLayoutsTests::testPercentSizePartition()
         QFAIL( qPrintable( "Unable to create / partition" ) );
     }
 
-    partitions = layout.createPartitions(
-        static_cast< Device* >( &dev ), 0, dev.totalLogical(), Config::LuksGeneration::Luks1, nullptr, nullptr, role );
+    partitions
+        = layout.createPartitions( static_cast< Device* >( &dev ), 0, dev.totalLogical(), nullptr, nullptr, role );
 
     QCOMPARE( partitions.count(), 1 );
 
@@ -115,8 +115,8 @@ CreateLayoutsTests::testMixedSizePartition()
         QFAIL( qPrintable( "Unable to create /bkup partition" ) );
     }
 
-    partitions = layout.createPartitions(
-        static_cast< Device* >( &dev ), 0, dev.totalLogical(), Config::LuksGeneration::Luks1, nullptr, nullptr, role );
+    partitions
+        = layout.createPartitions( static_cast< Device* >( &dev ), 0, dev.totalLogical(), nullptr, nullptr, role );
 
     QCOMPARE( partitions.count(), 3 );
 
@@ -125,6 +125,7 @@ CreateLayoutsTests::testMixedSizePartition()
     QCOMPARE( partitions[ 2 ]->length(), ( ( 5_GiB - 5_MiB ) / 2 ) / LOGICAL_SIZE );
 }
 
+#ifdef WITH_KPMCORE4API
 // TODO: Get a clean way to instantiate a test Device from KPMCore
 class DevicePrivate
 {
@@ -149,5 +150,11 @@ TestDevice::TestDevice( const QString& name, const qint64 logicalSectorSize, con
               Device::Type::Unknown_Device )
 {
 }
+#else
+TestDevice::TestDevice( const QString& name, const qint64 logicalSectorSize, const qint64 totalLogicalSectors )
+    : Device( name, QString( "node" ), logicalSectorSize, totalLogicalSectors, QString(), Device::Type::Unknown_Device )
+{
+}
+#endif
 
 TestDevice::~TestDevice() {}

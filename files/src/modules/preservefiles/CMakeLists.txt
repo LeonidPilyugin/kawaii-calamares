@@ -14,4 +14,9 @@ calamares_add_plugin(preservefiles
     EMERGENCY
 )
 
-calamares_add_test(preservefilestest SOURCES Item.cpp Tests.cpp)
+calamares_add_test(
+    preservefilestest
+    SOURCES
+        Item.cpp
+        Tests.cpp
+)

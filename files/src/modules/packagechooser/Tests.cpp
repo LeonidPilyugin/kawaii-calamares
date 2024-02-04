@@ -12,7 +12,7 @@
 #ifdef HAVE_APPDATA
 #include "ItemAppData.h"
 #endif
-#ifdef HAVE_APPSTREAM_VERSION
+#ifdef HAVE_APPSTREAM
 #include "ItemAppStream.h"
 #endif
 #include "PackageModel.h"
@@ -21,7 +21,7 @@
 
 #include <QtTest/QtTest>
 
-QTEST_GUILESS_MAIN( PackageChooserTests )
+QTEST_MAIN( PackageChooserTests )
 
 PackageChooserTests::PackageChooserTests() {}
 

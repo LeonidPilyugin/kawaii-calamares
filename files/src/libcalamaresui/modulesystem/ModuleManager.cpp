@@ -34,6 +34,7 @@ ModuleManager::instance()
     return s_instance;
 }
 
+
 ModuleManager::ModuleManager( const QStringList& paths, QObject* parent )
     : QObject( parent )
     , m_paths( paths )
@@ -43,6 +44,7 @@ ModuleManager::ModuleManager( const QStringList& paths, QObject* parent )
     s_instance = this;
 }
 
+
 ModuleManager::~ModuleManager()
 {
     // The map is populated with Module::fromDescriptor(), which allocates on the heap.
@@ -51,6 +53,7 @@ ModuleManager::~ModuleManager()
         delete moduleptr;
     }
 }
+
 
 void
 ModuleManager::init()
@@ -95,7 +98,7 @@ ModuleManager::doInit()
                     }
 
                     bool ok = false;
-                    QVariantMap moduleDescriptorMap = Calamares::YAML::load( descriptorFileInfo, &ok );
+                    QVariantMap moduleDescriptorMap = CalamaresUtils::loadYaml( descriptorFileInfo, &ok );
                     QString moduleName = ok ? moduleDescriptorMap.value( "name" ).toString() : QString();
 
                     if ( ok && !moduleName.isEmpty() && ( moduleName == currentDir.dirName() )
@@ -133,11 +136,13 @@ ModuleManager::doInit()
     QTimer::singleShot( 10, this, &ModuleManager::initDone );
 }
 
+
 QList< ModuleSystem::InstanceKey >
 ModuleManager::loadedInstanceKeys()
 {
     return m_loadedModulesByInstanceKey.keys();
 }
+
 
 Calamares::ModuleSystem::Descriptor
 ModuleManager::moduleDescriptor( const QString& name )
@@ -150,6 +155,7 @@ ModuleManager::moduleInstance( const ModuleSystem::InstanceKey& instanceKey )
 {
     return m_loadedModulesByInstanceKey.value( instanceKey );
 }
+
 
 /** @brief Returns the config file name for the given @p instanceKey
  *
@@ -179,6 +185,7 @@ getConfigFileName( const Settings::InstanceDescriptionList& descriptorList,
         }
     }
 
+
     // This should already have been checked and failed the module already
     return QString();
 }
@@ -207,7 +214,7 @@ ModuleManager::loadModules()
                 continue;
             }
 
-            const ModuleSystem::Descriptor descriptor
+            ModuleSystem::Descriptor descriptor
                 = m_availableDescriptorsByModuleName.value( instanceKey.module(), ModuleSystem::Descriptor() );
             if ( !descriptor.isValid() )
             {
@@ -342,18 +349,7 @@ ModuleManager::checkRequirements()
     connect( rq,
              &RequirementsChecker::done,
              this,
-             [ = ]()
-             {
-                 if ( m_requirementsModel->satisfiedMandatory() )
-                 {
-                     /* we're done */ this->requirementsComplete( true );
-                 }
-                 else
-                 {
-                     this->requirementsComplete( false );
-                     QTimer::singleShot( std::chrono::seconds( 5 ), this, &ModuleManager::checkRequirements );
-                 }
-             } );
+             [ = ]() { this->requirementsComplete( m_requirementsModel->satisfiedMandatory() ); } );
 
     QTimer::singleShot( 0, rq, &RequirementsChecker::run );
 }
@@ -420,13 +416,11 @@ ModuleManager::checkModuleDependencies( const Module& m )
     {
         bool requirementFound = false;
         for ( const Module* v : m_loadedModulesByInstanceKey )
-        {
             if ( required == v->name() )
             {
                 requirementFound = true;
                 break;
             }
-        }
         if ( !requirementFound )
         {
             cError() << "Module" << m.name() << "requires" << required << "before it in sequence.";

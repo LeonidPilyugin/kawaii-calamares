@@ -3,7 +3,6 @@
  *   SPDX-FileCopyrightText: 2014 Aurélien Gâteau <agateau@kde.org>
  *   SPDX-FileCopyrightText: 2015 Teo Mrnjavac <teo@kde.org>
  *   SPDX-FileCopyrightText: 2019 Adriaan de Groot <groot@kde.org>
- *   SPDX-FileCopyrightText: 2021 Anubhav Choudhary <ac.10edu@gmail.com>
  *   SPDX-License-Identifier: GPL-3.0-or-later
  *
  *   Calamares is Free Software: see the License-Identifier above.
@@ -57,7 +56,7 @@ BootLoaderModel::createMbrItems()
 {
     for ( auto device : m_devices )
     {
-        QString text = tr( "Master Boot Record of %1", "@info" ).arg( device->name() );
+        QString text = tr( "Master Boot Record of %1" ).arg( device->name() );
         appendRow( createBootLoaderItem( text, device->deviceNode(), false ) );
     }
 }
@@ -80,7 +79,7 @@ BootLoaderModel::updateInternal()
     clear();
     createMbrItems();
 
-    // An empty model is possible if you don't have permissions: don't crash though.
+    // An empty model is possible if you don't havee permissions: don't crash though.
     if ( rowCount() < 1 )
     {
         return;
@@ -90,14 +89,14 @@ BootLoaderModel::updateInternal()
     Partition* partition = KPMHelpers::findPartitionByMountPoint( m_devices, "/boot" );
     if ( partition )
     {
-        partitionText = tr( "Boot Partition", "@info" );
+        partitionText = tr( "Boot Partition" );
     }
     else
     {
         partition = KPMHelpers::findPartitionByMountPoint( m_devices, "/" );
         if ( partition )
         {
-            partitionText = tr( "System Partition", "@info" );
+            partitionText = tr( "System Partition" );
         }
     }
 
@@ -125,10 +124,10 @@ BootLoaderModel::updateInternal()
         {
             appendRow( createBootLoaderItem( partitionText, PartitionInfo::mountPoint( partition ), true ) );
         }
+
+        // Create "don't install bootloader" item
+        appendRow( createBootLoaderItem( tr( "Do not install a boot loader" ), QString(), false ) );
     }
-    // Create "don't install bootloader" item. This is always available,
-    // also if there was no /boot or / partition found.
-    appendRow( createBootLoaderItem( tr( "Do not install a boot loader", "@label" ), QString(), false ) );
 }
 
 

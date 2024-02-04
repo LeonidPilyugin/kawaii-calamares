@@ -15,10 +15,8 @@
 
 #include <QtCore/QIntegerForSize>
 
-namespace Calamares
+namespace CalamaresUtils
 {
-/// @brief Type for expressing units
-using intunit_t = quint64;
 
 namespace Units
 {
@@ -139,17 +137,10 @@ BytesToMiB( qint64 b )
     return int( b / 1024 / 1024 );
 }
 
-// TODO: deprecate signed version
 constexpr int
 BytesToGiB( qint64 b )
 {
     return int( b / 1024 / 1024 / 1024 );
-}
-
-constexpr intunit_t
-BytesToGiB( intunit_t b )
-{
-    return b / 1024 / 1024 / 1024;
 }
 
 constexpr qint64
@@ -170,6 +161,6 @@ bytesToSectors( qint64 bytes, qint64 blocksize )
     return alignBytesToBlockSize( alignBytesToBlockSize( bytes, blocksize ), MiBtoBytes( 1ULL ) ) / blocksize;
 }
 
-}  // namespace Calamares
+}  // namespace CalamaresUtils
 
 #endif

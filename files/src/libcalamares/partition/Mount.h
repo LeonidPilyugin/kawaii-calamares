@@ -20,7 +20,7 @@
 
 #include <memory>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 namespace Partition
 {
@@ -107,6 +107,6 @@ struct DLLEXPORT MtabInfo
 };
 
 }  // namespace Partition
-}  // namespace Calamares
+}  // namespace CalamaresUtils
 
 #endif

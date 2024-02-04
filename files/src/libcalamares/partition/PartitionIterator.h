@@ -23,7 +23,7 @@ class Device;
 class Partition;
 class PartitionTable;
 
-namespace Calamares
+namespace CalamaresUtils
 {
 namespace Partition
 {
@@ -62,6 +62,6 @@ private:
 };
 
 }  // namespace Partition
-}  // namespace Calamares
+}  // namespace CalamaresUtils
 
 #endif  // PARTITION_PARTITIONITERATOR_H

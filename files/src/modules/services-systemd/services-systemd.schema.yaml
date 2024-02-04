@@ -4,18 +4,22 @@
 $schema: https://json-schema.org/schema#
 $id: https://calamares.io/schemas/services-systemd
 definitions:
-    unit:
-        $id: 'definitions/unit'
+    service:
+        $id: '#definitions/service'
         type: object
-        description: a map containing a unit name, an action, and whether it is mandatory
+        description: a name and a flag for services, targets, and others
         additionalProperties: false
         properties:
             name: { type: string }
-            action: { type: string, default: "enable" }
             mandatory: { type: boolean, default: false }
         required: [ name ]
 
 additionalProperties: false
 type: object
 properties:
-    units: { type: array, items: { $ref: 'definitions/unit' } }
+    services: { type: array, items: { $ref: '#definitions/service' } }
+    targets: { type: array, items: { $ref: '#definitions/service' } }
+    timers: { type: array, items: { $ref: '#definitions/service' } }
+    disable: { type: array, items: { $ref: '#definitions/service' } }
+    disable-targets: { type: array, items: { $ref: '#definitions/service' } }
+    mask: { type: array, items: { $ref: '#definitions/service' } }

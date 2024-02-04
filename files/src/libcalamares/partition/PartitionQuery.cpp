@@ -18,7 +18,7 @@
 #include <kpmcore/core/partition.h>
 #include <kpmcore/core/partitiontable.h>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 namespace Partition
 {
@@ -50,7 +50,12 @@ isPartitionFreeSpace( const Partition* partition )
 bool
 isPartitionNew( const Partition* partition )
 {
-    return partition->state() == Partition::State::New;
+#if defined( WITH_KPMCORE4API )
+    constexpr auto NewState = Partition::State::New;
+#else
+    constexpr auto NewState = Partition::StateNew;
+#endif
+    return partition->state() == NewState;
 }
 
 
@@ -58,15 +63,11 @@ Partition*
 findPartitionByCurrentMountPoint( const QList< Device* >& devices, const QString& mountPoint )
 {
     for ( auto device : devices )
-    {
         for ( auto it = PartitionIterator::begin( device ); it != PartitionIterator::end( device ); ++it )
-        {
             if ( ( *it )->mountPoint() == mountPoint )
             {
                 return *it;
             }
-        }
-    }
     return nullptr;
 }
 
@@ -112,4 +113,4 @@ findPartitions( const QList< Device* >& devices, std::function< bool( Partition*
 
 
 }  // namespace Partition
-}  // namespace Calamares
+}  // namespace CalamaresUtils

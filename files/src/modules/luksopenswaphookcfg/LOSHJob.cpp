@@ -10,11 +10,11 @@
 
 #include "GlobalStorage.h"
 #include "JobQueue.h"
+#include "utils/CalamaresUtilsSystem.h"
 #include "utils/Logger.h"
 #include "utils/Permissions.h"
 #include "utils/PluginFactory.h"
 #include "utils/String.h"
-#include "utils/System.h"
 #include "utils/Variant.h"
 
 #include <QList>
@@ -28,6 +28,7 @@ LOSHJob::LOSHJob( QObject* parent )
 }
 
 LOSHJob::~LOSHJob() {}
+
 
 QString
 LOSHJob::prettyName() const
@@ -68,8 +69,8 @@ write_openswap_conf( const QString& path, QStringList& contents, const LOSHInfo&
         }
         cDebug() << "Writing" << contents.length() << "line configuration to" << path;
         // \n between each two lines, and a \n at the end
-        Calamares::System::instance()->createTargetFile(
-            path, contents.join( '\n' ).append( '\n' ).toUtf8(), Calamares::System::WriteMode::Overwrite );
+        CalamaresUtils::System::instance()->createTargetFile(
+            path, contents.join( '\n' ).append( '\n' ).toUtf8(), CalamaresUtils::System::WriteMode::Overwrite );
     }
     else
     {
@@ -80,7 +81,7 @@ write_openswap_conf( const QString& path, QStringList& contents, const LOSHInfo&
 Calamares::JobResult
 LOSHJob::exec()
 {
-    const auto* sys = Calamares::System::instance();
+    const auto* sys = CalamaresUtils::System::instance();
     if ( !sys )
     {
         return Calamares::JobResult::internalError(
@@ -115,7 +116,7 @@ LOSHJob::exec()
 void
 LOSHJob::setConfigurationMap( const QVariantMap& configurationMap )
 {
-    m_configFilePath = Calamares::getString(
+    m_configFilePath = CalamaresUtils::getString(
         configurationMap, QStringLiteral( "configFilePath" ), QStringLiteral( "/etc/openswap.conf" ) );
 }
 
@@ -162,8 +163,9 @@ globalStoragePartitionInfo( Calamares::GlobalStorage* gs, LOSHInfo& info )
     QString btrfsRootSubvolume = gs->value( "btrfsRootSubvolume" ).toString();
     if ( !btrfsRootSubvolume.isEmpty() )
     {
-        Calamares::String::removeLeading( btrfsRootSubvolume, '/' );
-        info.keyfile_device_mount_options = QStringLiteral( "--options=subvol=" ) + btrfsRootSubvolume;
+        CalamaresUtils::removeLeading( btrfsRootSubvolume, '/' );
+        info.keyfile_device_mount_options
+            = QStringLiteral( "--options=subvol=" ) + btrfsRootSubvolume;
     }
 }
 

@@ -14,4 +14,9 @@ calamares_add_plugin(luksopenswaphookcfg
     SHARED_LIB
 )
 
-calamares_add_test(luksopenswaphooktest SOURCES LOSHJob.cpp Tests.cpp)
+calamares_add_test(
+    luksopenswaphooktest
+    SOURCES
+        LOSHJob.cpp
+        Tests.cpp
+)

@@ -13,7 +13,7 @@
 
 #include <QtXml/QDomDocument>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 namespace GeoIP
 {
@@ -59,6 +59,7 @@ getElementTexts( const QByteArray& data, const QString& tag )
     return elements;
 }
 
+
 QString
 GeoIPXML::rawReply( const QByteArray& data )
 {
@@ -89,4 +90,4 @@ GeoIPXML::processReply( const QByteArray& data )
 }
 
 }  // namespace GeoIP
-}  // namespace Calamares
+}  // namespace CalamaresUtils

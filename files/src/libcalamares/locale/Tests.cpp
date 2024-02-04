@@ -71,7 +71,7 @@ LocaleTests::initTestCase()
 void
 LocaleTests::testLanguageModelCount()
 {
-    const auto* m = Calamares::Locale::availableTranslations();
+    const auto* m = CalamaresUtils::Locale::availableTranslations();
 
     QVERIFY( m );
     QVERIFY( m->rowCount( QModelIndex() ) > 1 );
@@ -90,7 +90,7 @@ LocaleTests::testLanguageModelCount()
 void
 LocaleTests::testLanguageScripts()
 {
-    const auto* m = Calamares::Locale::availableTranslations();
+    const auto* m = CalamaresUtils::Locale::availableTranslations();
 
     QVERIFY( m );
 
@@ -137,12 +137,14 @@ LocaleTests::testInterlingue()
     QCOMPARE( QLocale( "bork" ).language(), QLocale::C );
 }
 
+
 static const QStringList&
 someLanguages()
 {
     static QStringList languages { "nl", "de", "da", "nb", "sr@latin", "ar", "ru" };
     return languages;
 }
+
 
 /** @brief Check consistency of test data
  * Check that all the languages used in testing, are actually enabled
@@ -151,11 +153,12 @@ someLanguages()
 void
 LocaleTests::testTranslatableLanguages()
 {
-    cDebug() << "Translation languages:" << Calamares::Locale::availableLanguages();
+    QStringList availableLanguages = QString( CALAMARES_TRANSLATION_LANGUAGES ).split( ';' );
+    cDebug() << "Translation languages:" << availableLanguages;
     for ( const auto& language : someLanguages() )
     {
         // Could be QVERIFY, but then we don't see what language code fails
-        QCOMPARE( Calamares::Locale::availableLanguages().contains( language ) ? language : QString(), language );
+        QCOMPARE( availableLanguages.contains( language ) ? language : QString(), language );
     }
 }
 
@@ -164,11 +167,11 @@ LocaleTests::testTranslatableLanguages()
 void
 LocaleTests::testTranslatableConfig1()
 {
-    Calamares::Locale::TranslatedString ts0;
+    CalamaresUtils::Locale::TranslatedString ts0;
     QVERIFY( ts0.isEmpty() );
     QCOMPARE( ts0.count(), 1 );  // the empty string
 
-    Calamares::Locale::TranslatedString ts1( "Hello" );
+    CalamaresUtils::Locale::TranslatedString ts1( "Hello" );
     QCOMPARE( ts1.count(), 1 );
     QVERIFY( !ts1.isEmpty() );
 
@@ -177,7 +180,7 @@ LocaleTests::testTranslatableConfig1()
 
     QVariantMap map;
     map.insert( "description", "description (no language)" );
-    Calamares::Locale::TranslatedString ts2( map, "description" );
+    CalamaresUtils::Locale::TranslatedString ts2( map, "description" );
     QCOMPARE( ts2.count(), 1 );
     QVERIFY( !ts2.isEmpty() );
 
@@ -203,7 +206,7 @@ LocaleTests::testTranslatableConfig2()
     }
 
     // If there's no untranslated string in the map, it is considered empty
-    Calamares::Locale::TranslatedString ts0( map, "description" );
+    CalamaresUtils::Locale::TranslatedString ts0( map, "description" );
     QVERIFY( ts0.isEmpty() );  // Because no untranslated string
     QCOMPARE( ts0.count(),
               someLanguages().count() + 1 );  // But there are entries for the translations, plus an empty string
@@ -212,7 +215,7 @@ LocaleTests::testTranslatableConfig2()
     map.insert( QString( "description" ), "description (no language)" );
     map.insert( QString( "name" ), "name (no language)" );
 
-    Calamares::Locale::TranslatedString ts1( map, "description" );
+    CalamaresUtils::Locale::TranslatedString ts1( map, "description" );
     // The +1 is because "" is always also inserted
     QCOMPARE( ts1.count(), someLanguages().count() + 1 );
     QVERIFY( !ts1.isEmpty() );
@@ -228,20 +231,19 @@ LocaleTests::testTranslatableConfig2()
             continue;
         }
         // Could be QVERIFY, but then we don't see what language code fails
-        QCOMPARE( ts1.get( QLocale( language ) ) == QString( "description (language %1)" ).arg( language ) ? language
-                                                                                                           : QString(),
+        QCOMPARE( ts1.get( language ) == QString( "description (language %1)" ).arg( language ) ? language : QString(),
                   language );
     }
     QCOMPARE( ts1.get( QLocale( QLocale::Language::Serbian, QLocale::Script::LatinScript, QLocale::Country::Serbia ) ),
               QStringLiteral( "description (language sr@latin)" ) );
 
-    Calamares::Locale::TranslatedString ts2( map, "name" );
+    CalamaresUtils::Locale::TranslatedString ts2( map, "name" );
     // We skipped dutch this time
     QCOMPARE( ts2.count(), someLanguages().count() );
     QVERIFY( !ts2.isEmpty() );
 
     // This key doesn't exist
-    Calamares::Locale::TranslatedString ts3( map, "front" );
+    CalamaresUtils::Locale::TranslatedString ts3( map, "front" );
     QVERIFY( ts3.isEmpty() );
     QCOMPARE( ts3.count(), 1 );  // The empty string
 }
@@ -249,7 +251,7 @@ LocaleTests::testTranslatableConfig2()
 void
 LocaleTests::testTranslatableConfigContext()
 {
-    using TS = Calamares::Locale::TranslatedString;
+    using TS = CalamaresUtils::Locale::TranslatedString;
 
     const QString original( "Quit" );
     TS quitUntranslated( original );
@@ -271,10 +273,11 @@ LocaleTests::testTranslatableConfigContext()
     QCOMPARE( tr( "Quit" ), QStringLiteral( "Ophouden" ) );
 }
 
+
 void
 LocaleTests::testRegions()
 {
-    using namespace Calamares::Locale;
+    using namespace CalamaresUtils::Locale;
     RegionsModel regions;
 
     QVERIFY( regions.rowCount( QModelIndex() ) > 3 );  // Africa, America, Asia
@@ -292,6 +295,7 @@ LocaleTests::testRegions()
     QVERIFY( !names.contains( "UTC" ) );
 }
 
+
 static void
 displayedNames( QAbstractItemModel& model, QStringList& names )
 {
@@ -308,7 +312,7 @@ displayedNames( QAbstractItemModel& model, QStringList& names )
 void
 LocaleTests::testSimpleZones()
 {
-    using namespace Calamares::Locale;
+    using namespace CalamaresUtils::Locale;
     ZonesModel zones;
 
     QVERIFY( zones.rowCount( QModelIndex() ) > 24 );
@@ -334,7 +338,7 @@ LocaleTests::testSimpleZones()
 void
 LocaleTests::testComplexZones()
 {
-    using namespace Calamares::Locale;
+    using namespace CalamaresUtils::Locale;
     ZonesModel zones;
     RegionalZonesModel europe( &zones );
 
@@ -373,12 +377,12 @@ LocaleTests::testComplexZones()
 void
 LocaleTests::testTZLookup()
 {
-    using namespace Calamares::Locale;
+    using namespace CalamaresUtils::Locale;
     ZonesModel zones;
 
     QVERIFY( zones.find( "America", "New_York" ) );
     QCOMPARE( zones.find( "America", "New_York" )->zone(), QStringLiteral( "New_York" ) );
-    QCOMPARE( zones.find( "America", "New_York" )->translated(), QStringLiteral( "New York" ) );
+    QCOMPARE( zones.find( "America", "New_York" )->tr(), QStringLiteral( "New York" ) );
 
     QVERIFY( !zones.find( "Europe", "New_York" ) );
     QVERIFY( !zones.find( "America", "New York" ) );
@@ -387,7 +391,7 @@ LocaleTests::testTZLookup()
 void
 LocaleTests::testTZIterator()
 {
-    using namespace Calamares::Locale;
+    using namespace CalamaresUtils::Locale;
     const ZonesModel zones;
 
     QVERIFY( zones.find( "Europe", "Rome" ) );
@@ -433,7 +437,7 @@ LocaleTests::testLocationLookup_data()
 void
 LocaleTests::testLocationLookup()
 {
-    const Calamares::Locale::ZonesModel zones;
+    const CalamaresUtils::Locale::ZonesModel zones;
 
     QFETCH( double, latitude );
     QFETCH( double, longitude );
@@ -452,7 +456,7 @@ LocaleTests::testLocationLookup2()
     // Spot patch
     //     "ZA -3230+02259 Africa/Johannesburg\n";
 
-    const Calamares::Locale::ZonesModel zones;
+    const CalamaresUtils::Locale::ZonesModel zones;
     const auto* zone = zones.find( -26.15, 28.00 );
     QCOMPARE( zone->zone(), QString( "Johannesburg" ) );
     // The TZ data sources use minutes-and-seconds notation,
@@ -486,7 +490,7 @@ LocaleTests::testGSUpdates()
 
     // Insert one
     {
-        Calamares::Locale::insertGS( gs, "LANG", "en_US" );
+        CalamaresUtils::Locale::insertGS( gs, "LANG", "en_US" );
         auto map = gs.value( gsKey ).toMap();
         QCOMPARE( map.count(), 1 );
         QCOMPARE( map.value( "LANG" ).toString(), QString( "en_US" ) );
@@ -494,7 +498,7 @@ LocaleTests::testGSUpdates()
 
     // Overwrite one
     {
-        Calamares::Locale::insertGS( gs, "LANG", "nl_BE" );
+        CalamaresUtils::Locale::insertGS( gs, "LANG", "nl_BE" );
         auto map = gs.value( gsKey ).toMap();
         QCOMPARE( map.count(), 1 );
         QCOMPARE( map.value( "LANG" ).toString(), QString( "nl_BE" ) );
@@ -502,7 +506,7 @@ LocaleTests::testGSUpdates()
 
     // Insert a second value
     {
-        Calamares::Locale::insertGS( gs, "LC_TIME", "UTC" );
+        CalamaresUtils::Locale::insertGS( gs, "LC_TIME", "UTC" );
         auto map = gs.value( gsKey ).toMap();
         QCOMPARE( map.count(), 2 );
         QCOMPARE( map.value( "LANG" ).toString(), QString( "nl_BE" ) );
@@ -516,7 +520,7 @@ LocaleTests::testGSUpdates()
         kv.insert( "LC_CURRENCY", "rbl" );
 
         // Overwrite one, add one
-        Calamares::Locale::insertGS( gs, kv, Calamares::Locale::InsertMode::Merge );
+        CalamaresUtils::Locale::insertGS( gs, kv, CalamaresUtils::Locale::InsertMode::Merge );
         auto map = gs.value( gsKey ).toMap();
         QCOMPARE( map.count(), 3 );
         QCOMPARE( map.value( "LANG" ).toString(), QString( "en_SU" ) );
@@ -531,7 +535,7 @@ LocaleTests::testGSUpdates()
         kv.insert( "LC_CURRENCY", "peso" );
 
         // Overwrite one, add one
-        Calamares::Locale::insertGS( gs, kv, Calamares::Locale::InsertMode::Overwrite );
+        CalamaresUtils::Locale::insertGS( gs, kv, CalamaresUtils::Locale::InsertMode::Overwrite );
         auto map = gs.value( gsKey ).toMap();
         QCOMPARE( map.count(), 2 );  // the rest were cleared
         QCOMPARE( map.value( "LANG" ).toString(), QString( "en_US" ) );
@@ -540,6 +544,7 @@ LocaleTests::testGSUpdates()
         QCOMPARE( map.value( "LC_CURRENCY" ).toString(), QString( "peso" ) );
     }
 }
+
 
 QTEST_GUILESS_MAIN( LocaleTests )
 

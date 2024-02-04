@@ -68,12 +68,6 @@ KeyboardPage::KeyboardPage( Config* config, QWidget* parent )
         ui->variantSelector->setCurrentIndex( model->index( model->currentIndex() ) );
         cDebug() << "Variants now total=" << model->rowCount() << "selected=" << model->currentIndex();
     }
-    {
-        auto* model = config->keyboardGroupsSwitchers();
-        ui->groupSelector->setModel( model );
-        ui->groupSelector->setCurrentIndex( model->currentIndex() );
-        cDebug() << "Groups now total=" << model->rowCount() << "selected=" << model->currentIndex();
-    }
 
     connect( ui->buttonRestore,
              &QPushButton::clicked,
@@ -113,16 +107,6 @@ KeyboardPage::KeyboardPage( Config* config, QWidget* parent )
                  ui->variantSelector->setCurrentIndex( m_config->keyboardVariants()->index( index ) );
                  m_keyboardPreview->setVariant( m_config->keyboardVariants()->key( index ) );
              } );
-
-    connect( ui->groupSelector,
-             QOverload< int >::of( &QComboBox::currentIndexChanged ),
-             config->keyboardGroupsSwitchers(),
-             QOverload< int >::of( &XKBListModel::setCurrentIndex ) );
-    connect( config->keyboardGroupsSwitchers(),
-             &KeyboardGroupsSwitchersModel::currentIndexChanged,
-             ui->groupSelector,
-             &QComboBox::setCurrentIndex );
-
     CALAMARES_RETRANSLATE_SLOT( &KeyboardPage::retranslate );
 }
 

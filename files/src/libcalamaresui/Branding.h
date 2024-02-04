@@ -28,7 +28,7 @@
 namespace YAML
 {
 class Node;
-}  // namespace YAML
+}
 
 namespace Calamares
 {
@@ -72,18 +72,14 @@ public:
     };
     Q_ENUM( ImageEntry )
 
-    /** @brief Names of style entries, for use in code
-     *
-     * These names are mapped to names in the branding.desc file through
-     * an internal table s_styleEntryStrings, which defines which names
-     * in `branding.desc` key *style* are used for which entry.
-     */
     enum StyleEntry : short
     {
         SidebarBackground,
         SidebarText,
-        SidebarTextCurrent,
-        SidebarBackgroundCurrent,
+        SidebarTextSelect,
+        SidebarTextSelected = SidebarTextSelect,  // TODO:3.3:Remove SidebarTextSelect
+        SidebarTextHighlight,
+        SidebarBackgroundSelected = SidebarTextHighlight  // TODO:3.3:Remove SidebarTextHighlight
     };
     Q_ENUM( StyleEntry )
 
@@ -162,7 +158,7 @@ public:
 
     static Branding* instance();
 
-    explicit Branding( const QString& brandingFilePath, QObject* parent = nullptr, qreal devicePixelRatio = 1.0 );
+    explicit Branding( const QString& brandingFilePath, QObject* parent = nullptr );
 
     /** @brief Complete path of the branding descriptor file. */
     QString descriptorPath() const { return m_descriptorPath; }
@@ -262,12 +258,6 @@ public slots:
     QString shortProductName() const { return string( ShortProductName ); }
     QString shortVersionedName() const { return string( ShortVersionedName ); }
 
-    /** @brief Map an enum-value to the entry from the *style* key.
-     *
-     * e.g. StyleEntry::SidebarTextCurrent maps to the corresponding
-     * *style* entry, which is (confusingly) named "sidebarTextSelect"
-     * in the branding file.
-     */
     QString styleString( StyleEntry styleEntry ) const;
     QString imagePath( ImageEntry imageEntry ) const;
 
@@ -279,6 +269,7 @@ private:
 
     static const QStringList s_stringEntryStrings;
     static const QStringList s_imageEntryStrings;
+    static const QStringList s_styleEntryStrings;
     static const QStringList s_uploadServerStrings;
 
     QString m_descriptorPath;  // Path to descriptor (e.g. "/etc/calamares/default/branding.desc")
@@ -317,8 +308,6 @@ private:
     PanelFlavor m_navigationFlavor = PanelFlavor::Widget;
     PanelSide m_sidebarSide = PanelSide::Left;
     PanelSide m_navigationSide = PanelSide::Bottom;
-
-    qreal m_devicePixelRatio;
 };
 
 }  // namespace Calamares

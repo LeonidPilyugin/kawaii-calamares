@@ -7,15 +7,15 @@
 
 #include "Permissions.h"
 
+#include "CalamaresUtilsSystem.h"
 #include "Logger.h"
-#include "System.h"
 
 #include <QString>
 #include <QStringList>
 
 #include <sys/stat.h>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 
 Permissions::Permissions()
@@ -25,6 +25,7 @@ Permissions::Permissions()
     , m_valid( false )
 {
 }
+
 
 Permissions::Permissions( QString const& p )
     : Permissions()
@@ -90,7 +91,7 @@ Permissions::apply( const QString& path, int mode )
 }
 
 bool
-Permissions::apply( const QString& path, const Calamares::Permissions& p )
+Permissions::apply( const QString& path, const CalamaresUtils::Permissions& p )
 {
     if ( !p.isValid() )
     {
@@ -104,8 +105,8 @@ Permissions::apply( const QString& path, const Calamares::Permissions& p )
         // uid_t and gid_t values to pass to that system call.
         //
         // Do a lame cop-out and let the chown(8) utility do the heavy lifting.
-        if ( Calamares::System::runCommand( { "chown", p.username() + ':' + p.group(), path },
-                                            std::chrono::seconds( 3 ) )
+        if ( CalamaresUtils::System::runCommand( { "chown", p.username() + ':' + p.group(), path },
+                                                 std::chrono::seconds( 3 ) )
                  .getExitCode() )
         {
             r = false;
@@ -120,4 +121,5 @@ Permissions::apply( const QString& path, const Calamares::Permissions& p )
     return r;
 }
 
-}  // namespace Calamares
+
+}  // namespace CalamaresUtils

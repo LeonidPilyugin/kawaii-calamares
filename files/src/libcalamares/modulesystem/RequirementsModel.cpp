@@ -10,48 +10,23 @@
 
 #include "RequirementsModel.h"
 
-#include "compat/Mutex.h"
 #include "utils/Logger.h"
 
 namespace Calamares
 {
 
 void
-RequirementsModel::clear()
-{
-    Calamares::MutexLocker l( &m_addLock );
-    beginResetModel();
-    m_requirements.clear();
-    endResetModel();
-    reCheckList();
-}
-
-void
 RequirementsModel::addRequirementsList( const Calamares::RequirementsList& requirements )
 {
-    Calamares::MutexLocker l( &m_addLock );
-
+    QMutexLocker l( &m_addLock );
     beginResetModel();
-    for ( const auto& r : requirements )
-    {
-        auto it = std::find_if( m_requirements.begin(),
-                                m_requirements.end(),
-                                [ &r ]( const Calamares::RequirementEntry& re ) { return r.name == re.name; } );
-        if ( it != m_requirements.end() )
-        {
-            *it = r;
-        }
-        else
-        {
-            m_requirements.append( r );
-        }
-    }
+    m_requirements.append( requirements );
+    changeRequirementsList();
     endResetModel();
-    reCheckList();
 }
 
 void
-RequirementsModel::reCheckList()
+RequirementsModel::changeRequirementsList()
 {
     auto isUnSatisfied = []( const Calamares::RequirementEntry& e ) { return !e.satisfied; };
     auto isMandatoryAndUnSatisfied = []( const Calamares::RequirementEntry& e ) { return e.mandatory && !e.satisfied; };
@@ -59,8 +34,8 @@ RequirementsModel::reCheckList()
     m_satisfiedRequirements = std::none_of( m_requirements.begin(), m_requirements.end(), isUnSatisfied );
     m_satisfiedMandatory = std::none_of( m_requirements.begin(), m_requirements.end(), isMandatoryAndUnSatisfied );
 
-    Q_EMIT satisfiedRequirementsChanged( m_satisfiedRequirements );
-    Q_EMIT satisfiedMandatoryChanged( m_satisfiedMandatory );
+    emit satisfiedRequirementsChanged( m_satisfiedRequirements );
+    emit satisfiedMandatoryChanged( m_satisfiedMandatory );
 }
 
 int
@@ -123,7 +98,7 @@ void
 RequirementsModel::setProgressMessage( const QString& m )
 {
     m_progressMessage = m;
-    Q_EMIT progressMessageChanged( m_progressMessage );
+    emit progressMessageChanged( m_progressMessage );
 }
 
 }  // namespace Calamares

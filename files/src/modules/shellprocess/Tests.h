@@ -31,7 +31,7 @@ private Q_SLOTS:
     void testProcessFromObject();
     // Create from a complex YAML list
     void testProcessListFromObject();
-    // Check variable substitution
+    // Check @@ROOT@@ substitution
     void testRootSubstitution();
 };
 

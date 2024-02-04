@@ -62,10 +62,8 @@ function(calamares_add_library)
         add_library(${target} STATIC ${LIBRARY_SOURCES})
     elseif(LIBRARY_TARGET_TYPE STREQUAL "MODULE")
         add_library(${target} MODULE ${LIBRARY_SOURCES})
-    elseif(LIBRARY_TARGET_TYPE STREQUAL "SHARED")
-        add_library(${target} SHARED ${LIBRARY_SOURCES})
     else() # default
-        message(FATAL_ERROR "Invalid library type '${LIBRARY_TARGET_TYPE}'")
+        add_library(${target} SHARED ${LIBRARY_SOURCES})
     endif()
 
     calamares_automoc(${target})
@@ -88,9 +86,9 @@ function(calamares_add_library)
     # add link targets
     target_link_libraries(${target}
         LINK_PUBLIC ${Calamares_LIBRARIES}
-        ${qtname}::Core
-        ${qtname}::Gui
-        ${qtname}::Widgets
+        Qt5::Core
+        Qt5::Gui
+        Qt5::Widgets
     )
     if(LIBRARY_LINK_LIBRARIES)
         target_link_libraries(${target} LINK_PUBLIC ${LIBRARY_LINK_LIBRARIES})

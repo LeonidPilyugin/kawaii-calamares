@@ -11,8 +11,8 @@
 
 #include "GlobalStorage.h"
 #include "JobQueue.h"
+#include "utils/CalamaresUtilsSystem.h"
 #include "utils/Logger.h"
-#include "utils/System.h"
 
 #ifdef WITH_KCONFIG
 #include <KConfigGroup>
@@ -30,13 +30,13 @@ PlasmaLnfJob::~PlasmaLnfJob() {}
 QString
 PlasmaLnfJob::prettyName() const
 {
-    return tr( "Applying Plasma Look-and-Feel…", "@status" );
+    return tr( "Plasma Look-and-Feel Job" );
 }
 
 Calamares::JobResult
 PlasmaLnfJob::exec()
 {
-    auto* system = Calamares::System::instance();
+    auto* system = CalamaresUtils::System::instance();
     auto* gs = Calamares::JobQueue::instance()->globalStorage();
 
     QStringList command( { "sudo",

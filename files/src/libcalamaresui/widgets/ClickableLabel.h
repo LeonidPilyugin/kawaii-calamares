@@ -8,8 +8,8 @@
  *
  */
 
-#ifndef LIBCALAMARESUI_WIDGETS_CLICKABLELABEL_H
-#define LIBCALAMARESUI_WIDGETS_CLICKABLELABEL_H
+#ifndef LIBCALAMARESUI_CLICKABLELABEL_H
+#define LIBCALAMARESUI_CLICKABLELABEL_H
 
 #include <QElapsedTimer>
 #include <QLabel>
@@ -18,8 +18,7 @@
 
 namespace Calamares
 {
-namespace Widgets
-{
+
 /** @brief A Label where the whole label area is clickable
  *
  * When clicking anywhere on the Label (text, background, whatever)
@@ -45,7 +44,7 @@ protected:
 private:
     QElapsedTimer m_time;
 };
-}  // namespace Widgets
+
 }  // namespace Calamares
 
-#endif  // LIBCALAMARESUI_WIDGETS_CLICKABLELABEL_H
+#endif  // LIBCALAMARESUI_CLICKABLELABEL_H

@@ -25,7 +25,7 @@ class CoreBackend;  // From KPMCore
 class Device;  // From KPMCore
 class Partition;
 
-using PartitionSize = Calamares::Partition::PartitionSize;
+using PartitionSize = CalamaresUtils::Partition::PartitionSize;
 
 class PLUGINDLLEXPORT ResizeFSJob : public Calamares::CppJob
 {
@@ -51,7 +51,7 @@ public:
     PartitionSize minimumSize() const { return m_atleast; }
 
 private:
-    Calamares::Partition::KPMManager m_kpmcore;
+    CalamaresUtils::Partition::KPMManager m_kpmcore;
     PartitionSize m_size;
     PartitionSize m_atleast;
     QString m_fsname;  // Either this, or devicename, is set, not both

@@ -19,7 +19,7 @@
 #include <kpmcore/ops/resizeoperation.h>
 #include <kpmcore/util/report.h>
 
-using Calamares::BytesToMiB;
+using CalamaresUtils::BytesToMiB;
 
 //- ResizePartitionJob ---------------------------------------------------------
 ResizePartitionJob::ResizePartitionJob( Device* device, Partition* partition, qint64 firstSector, qint64 lastSector )
@@ -36,26 +36,33 @@ ResizePartitionJob::ResizePartitionJob( Device* device, Partition* partition, qi
 QString
 ResizePartitionJob::prettyName() const
 {
-    return tr( "Resize partition %1", "@title" ).arg( partition()->partitionPath() );
+    // FIXME: Copy PM ResizeOperation code which generates a description of the
+    // operation
+    return tr( "Resize partition %1." ).arg( partition()->partitionPath() );
 }
+
 
 QString
 ResizePartitionJob::prettyDescription() const
 {
-    return tr( "Resize <strong>%2MiB</strong> partition <strong>%1</strong> to <strong>%3MiB</strong>", "@info" )
+    return tr( "Resize <strong>%2MiB</strong> partition <strong>%1</strong> to "
+               "<strong>%3MiB</strong>." )
         .arg( partition()->partitionPath() )
         .arg( ( BytesToMiB( m_oldLastSector - m_oldFirstSector + 1 ) * partition()->sectorSize() ) )
         .arg( ( BytesToMiB( m_newLastSector - m_newFirstSector + 1 ) * partition()->sectorSize() ) );
 }
 
+
 QString
 ResizePartitionJob::prettyStatusMessage() const
 {
-    return tr( "Resizing %2MiB partition %1 to %3MiB…", "@status" )
+    return tr( "Resizing %2MiB partition %1 to "
+               "%3MiB." )
         .arg( partition()->partitionPath() )
         .arg( ( BytesToMiB( m_oldLastSector - m_oldFirstSector + 1 ) * partition()->sectorSize() ) )
         .arg( ( BytesToMiB( m_newLastSector - m_newFirstSector + 1 ) * partition()->sectorSize() ) );
 }
+
 
 Calamares::JobResult
 ResizePartitionJob::exec()
@@ -82,6 +89,7 @@ ResizePartitionJob::updatePreview()
     m_partition->parent()->insert( m_partition );
     m_device->partitionTable()->updateUnallocated( *m_device );
 }
+
 
 Device*
 ResizePartitionJob::device() const

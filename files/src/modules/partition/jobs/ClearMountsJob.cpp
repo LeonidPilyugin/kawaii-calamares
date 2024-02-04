@@ -28,7 +28,7 @@
 #include <QProcess>
 #include <QStringList>
 
-using Calamares::Partition::PartitionIterator;
+using CalamaresUtils::Partition::PartitionIterator;
 
 
 /** @brief Returns list of partitions on a given @p deviceName
@@ -368,20 +368,20 @@ ClearMountsJob::ClearMountsJob( Device* device )
 QString
 ClearMountsJob::prettyName() const
 {
-    return tr( "Clear mounts for partitioning operations on %1", "@title" ).arg( m_deviceNode );
+    return tr( "Clear mounts for partitioning operations on %1" ).arg( m_deviceNode );
 }
 
 QString
 ClearMountsJob::prettyStatusMessage() const
 {
-    return tr( "Clearing mounts for partitioning operations on %1…", "@status" ).arg( m_deviceNode );
+    return tr( "Clearing mounts for partitioning operations on %1." ).arg( m_deviceNode );
 }
 
 Calamares::JobResult
 ClearMountsJob::exec()
 {
     const QString deviceName = m_deviceNode.split( '/' ).last();
-    Calamares::Partition::Syncer s;
+    CalamaresUtils::Partition::Syncer s;
     QList< MessageAndPath > goodNews;
 
     apply( getCryptoDevices( m_mapperExceptions ), tryCryptoClose, goodNews );

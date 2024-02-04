@@ -192,7 +192,7 @@ PartitionSizeController::doUpdateSpinBox()
     {
         return;
     }
-    int mbSize = Calamares::BytesToMiB( m_partition->length() * m_device->logicalSize() );
+    int mbSize = CalamaresUtils::BytesToMiB( m_partition->length() * m_device->logicalSize() );
     m_spinBox->setValue( mbSize );
     if ( m_currentSpinBoxValue != -1 &&  //if it's not the first time we're setting it
          m_currentSpinBoxValue != mbSize )  //and the operation changes the SB value

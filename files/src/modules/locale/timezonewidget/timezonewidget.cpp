@@ -27,13 +27,13 @@
 #endif
 
 static QPoint
-getLocationPosition( const Calamares::Locale::TimeZoneData* l )
+getLocationPosition( const CalamaresUtils::Locale::TimeZoneData* l )
 {
     return TimeZoneImageList::getLocationPosition( l->longitude(), l->latitude() );
 }
 
 
-TimeZoneWidget::TimeZoneWidget( const Calamares::Locale::ZonesModel* zones, QWidget* parent )
+TimeZoneWidget::TimeZoneWidget( const CalamaresUtils::Locale::ZonesModel* zones, QWidget* parent )
     : QWidget( parent )
     , timeZoneImages( TimeZoneImageList::fromQRC() )
     , m_zonesData( zones )
@@ -144,7 +144,7 @@ TimeZoneWidget::paintEvent( QPaintEvent* )
 #else
     auto textwidth = [ & ]( const QString& s ) { return fontMetrics.width( s ); };
 #endif
-    const int textWidth = textwidth( m_currentLocation ? m_currentLocation->translated() : QString() );
+    const int textWidth = textwidth( m_currentLocation ? m_currentLocation->tr() : QString() );
     const int textHeight = fontMetrics.height();
 
     QRect rect = QRect( point.x() - textWidth / 2 - 5, point.y() - textHeight - 8, textWidth + 10, textHeight - 2 );
@@ -170,7 +170,7 @@ TimeZoneWidget::paintEvent( QPaintEvent* )
     painter.setBrush( QColor( 40, 40, 40 ) );
     painter.drawRoundedRect( rect, 3, 3 );
     painter.setPen( Qt::white );
-    painter.drawText( rect.x() + 5, rect.bottom() - 4, m_currentLocation ? m_currentLocation->translated() : QString() );
+    painter.drawText( rect.x() + 5, rect.bottom() - 4, m_currentLocation ? m_currentLocation->tr() : QString() );
 #endif
 }
 
@@ -185,7 +185,7 @@ TimeZoneWidget::mousePressEvent( QMouseEvent* event )
 
     int mX = event->pos().x();
     int mY = event->pos().y();
-    auto distance = [ & ]( const Calamares::Locale::TimeZoneData* zone )
+    auto distance = [ & ]( const CalamaresUtils::Locale::TimeZoneData* zone )
     {
         QPoint locPos = TimeZoneImageList::getLocationPosition( zone->longitude(), zone->latitude() );
         return double( abs( mX - locPos.x() ) + abs( mY - locPos.y() ) );

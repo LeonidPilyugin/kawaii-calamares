@@ -13,23 +13,22 @@
 #include "GlobalStorage.h"
 #include "JobQueue.h"
 
-#include "compat/Variant.h"
+// #include "utils/CalamaresUtils.h"
+#include "utils/CalamaresUtilsSystem.h"
 #include "utils/Logger.h"
-#include "utils/StringExpander.h"
-#include "utils/System.h"
 #include "utils/Variant.h"
 
 #include <QCoreApplication>
 #include <QVariantList>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 
 static CommandLine
 get_variant_object( const QVariantMap& m )
 {
-    QString command = Calamares::getString( m, "command" );
-    qint64 timeout = Calamares::getInteger( m, "timeout", -1 );
+    QString command = CalamaresUtils::getString( m, "command" );
+    qint64 timeout = CalamaresUtils::getInteger( m, "timeout", -1 );
 
     if ( !command.isEmpty() )
     {
@@ -46,11 +45,11 @@ get_variant_stringlist( const QVariantList& l )
     unsigned int count = 0;
     for ( const auto& v : l )
     {
-        if ( Calamares::typeOf( v ) == Calamares::StringVariantType )
+        if ( v.type() == QVariant::String )
         {
             retl.append( CommandLine( v.toString(), CommandLine::TimeoutNotSet() ) );
         }
-        else if ( Calamares::typeOf( v ) == Calamares::MapVariantType )
+        else if ( v.type() == QVariant::Map )
         {
             auto command( get_variant_object( v.toMap() ) );
             if ( command.isValid() )
@@ -61,52 +60,11 @@ get_variant_stringlist( const QVariantList& l )
         }
         else
         {
-            cWarning() << "Bad CommandList element" << count << v;
+            cWarning() << "Bad CommandList element" << count << v.type() << v;
         }
         ++count;
     }
     return retl;
-}
-
-static Calamares::String::DictionaryExpander
-get_gs_expander( System::RunLocation location )
-{
-    Calamares::GlobalStorage* gs = Calamares::JobQueue::instance()->globalStorage();
-
-    Calamares::String::DictionaryExpander expander;
-
-    // Figure out the replacement for ${ROOT}
-    if ( location == System::RunLocation::RunInTarget )
-    {
-        expander.insert( QStringLiteral( "ROOT" ), QStringLiteral( "/" ) );
-    }
-    else if ( gs && gs->contains( "rootMountPoint" ) )
-    {
-        expander.insert( QStringLiteral( "ROOT" ), gs->value( "rootMountPoint" ).toString() );
-    }
-
-    // Replacement for ${USER}
-    if ( gs && gs->contains( "username" ) )
-    {
-        expander.insert( QStringLiteral( "USER" ), gs->value( "username" ).toString() );
-    }
-
-    return expander;
-}
-
-CommandLine
-CommandLine::expand( KMacroExpanderBase& expander ) const
-{
-    QString c = first;
-    expander.expandMacrosShellQuote( c );
-    return { c, second };
-}
-
-Calamares::CommandLine
-CommandLine::expand() const
-{
-    auto expander = get_gs_expander( System::RunLocation::RunInHost );
-    return expand( expander );
 }
 
 CommandList::CommandList( bool doChroot, std::chrono::seconds timeout )
@@ -118,7 +76,7 @@ CommandList::CommandList( bool doChroot, std::chrono::seconds timeout )
 CommandList::CommandList::CommandList( const QVariant& v, bool doChroot, std::chrono::seconds timeout )
     : CommandList( doChroot, timeout )
 {
-    if ( Calamares::typeOf( v ) == Calamares::ListVariantType )
+    if ( v.type() == QVariant::List )
     {
         const auto v_list = v.toList();
         if ( v_list.count() )
@@ -130,11 +88,11 @@ CommandList::CommandList::CommandList( const QVariant& v, bool doChroot, std::ch
             cWarning() << "Empty CommandList";
         }
     }
-    else if ( Calamares::typeOf( v ) == Calamares::StringVariantType )
+    else if ( v.type() == QVariant::String )
     {
-        append( { v.toString(), m_timeout } );
+        append( v.toString() );
     }
-    else if ( Calamares::typeOf( v ) == Calamares::MapVariantType )
+    else if ( v.type() == QVariant::Map )
     {
         auto c( get_variant_object( v.toMap() ) );
         if ( c.isValid() )
@@ -145,32 +103,65 @@ CommandList::CommandList::CommandList( const QVariant& v, bool doChroot, std::ch
     }
     else
     {
-        cWarning() << "CommandList does not understand variant" << Calamares::typeOf( v );
+        cWarning() << "CommandList does not understand variant" << v.type();
     }
+}
+
+CommandList::~CommandList() {}
+
+static inline bool
+findInCommands( const CommandList& l, const QString& needle )
+{
+    for ( CommandList::const_iterator i = l.cbegin(); i != l.cend(); ++i )
+        if ( i->command().contains( needle ) )
+        {
+            return true;
+        }
+    return false;
 }
 
 Calamares::JobResult
 CommandList::run()
 {
+    QLatin1String rootMagic( "@@ROOT@@" );
+    QLatin1String userMagic( "@@USER@@" );
+
     System::RunLocation location = m_doChroot ? System::RunLocation::RunInTarget : System::RunLocation::RunInHost;
 
-    auto expander = get_gs_expander( location );
-    auto expandedList = expand( expander );
-    if ( expander.hasErrors() )
+    /* Figure out the replacement for @@ROOT@@ */
+    QString root = QStringLiteral( "/" );
+    Calamares::GlobalStorage* gs = Calamares::JobQueue::instance()->globalStorage();
+
+    bool needsRootSubstitution = findInCommands( *this, rootMagic );
+    if ( needsRootSubstitution && ( location == System::RunLocation::RunInHost ) )
     {
-        const auto missing = expander.errorNames();
-        cError() << "Missing variables:" << missing;
+        if ( !gs || !gs->contains( "rootMountPoint" ) )
+        {
+            cError() << "No rootMountPoint defined.";
+            return Calamares::JobResult::error(
+                QCoreApplication::translate( "CommandList", "Could not run command." ),
+                QCoreApplication::translate( "CommandList",
+                                             "The command runs in the host environment and needs to know the root "
+                                             "path, but no rootMountPoint is defined." ) );
+        }
+        root = gs->value( "rootMountPoint" ).toString();
+    }
+
+    bool needsUserSubstitution = findInCommands( *this, userMagic );
+    if ( needsUserSubstitution && ( !gs || !gs->contains( "username" ) ) )
+    {
+        cError() << "No username defined.";
         return Calamares::JobResult::error(
             QCoreApplication::translate( "CommandList", "Could not run command." ),
             QCoreApplication::translate( "CommandList",
-                                         "The commands use variables that are not defined. "
-                                         "Missing variables are: %1." )
-                .arg( missing.join( ',' ) ) );
+                                         "The command needs to know the user's name, but no username is defined." ) );
     }
+    QString user = gs->value( "username" ).toString();  // may be blank if unset
 
-    for ( CommandList::const_iterator i = expandedList.cbegin(); i != expandedList.cend(); ++i )
+    for ( CommandList::const_iterator i = cbegin(); i != cend(); ++i )
     {
         QString processed_cmd = i->command();
+        processed_cmd.replace( rootMagic, root ).replace( userMagic, user );
         bool suppress_result = false;
         if ( processed_cmd.startsWith( '-' ) )
         {
@@ -200,23 +191,10 @@ CommandList::run()
     return Calamares::JobResult::ok();
 }
 
-CommandList
-CommandList::expand( KMacroExpanderBase& expander ) const
+void
+CommandList::append( const QString& s )
 {
-    // Copy and expand the list, collecting missing variables (so don't call expand())
-    CommandList expandedList( m_doChroot, m_timeout );
-    std::transform( cbegin(),
-                    cend(),
-                    std::back_inserter( expandedList ),
-                    [ &expander ]( const CommandLine& c ) { return c.expand( expander ); } );
-    return expandedList;
+    append( CommandLine( s, m_timeout ) );
 }
 
-CommandList
-CommandList::expand() const
-{
-    auto expander = get_gs_expander( System::RunLocation::RunInHost );
-    return expand( expander );
-}
-
-}  // namespace Calamares
+}  // namespace CalamaresUtils

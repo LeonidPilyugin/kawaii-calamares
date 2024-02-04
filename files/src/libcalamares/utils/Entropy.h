@@ -16,7 +16,7 @@
 
 #include <QByteArray>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 /// @brief Which entropy source was actually used for the entropy.
 enum class EntropySource
@@ -41,6 +41,6 @@ DLLEXPORT EntropySource getEntropy( int size, QByteArray& b );
  * @see getEntropy
  */
 DLLEXPORT EntropySource getPrintableEntropy( int size, QString& s );
-}  // namespace Calamares
+}  // namespace CalamaresUtils
 
 #endif

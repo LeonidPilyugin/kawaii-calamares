@@ -11,8 +11,8 @@
 #include "DeviceList.h"
 
 #include "partition/PartitionIterator.h"
+#include "utils/CalamaresUtilsSystem.h"
 #include "utils/Logger.h"
-#include "utils/System.h"
 
 #include <kpmcore/backend/corebackend.h>
 #include <kpmcore/backend/corebackendmanager.h>
@@ -21,7 +21,7 @@
 
 #include <QProcess>
 
-using Calamares::Partition::PartitionIterator;
+using CalamaresUtils::Partition::PartitionIterator;
 
 namespace PartUtils
 {
@@ -34,12 +34,10 @@ static bool
 hasRootPartition( Device* device )
 {
     for ( auto it = PartitionIterator::begin( device ); it != PartitionIterator::end( device ); ++it )
-    {
         if ( ( *it )->mountPoint() == "/" )
         {
             return true;
         }
-    }
     return false;
 }
 
@@ -51,7 +49,7 @@ static bool
 blkIdCheckIso9660( const QString& path )
 {
     // If blkid fails, there's no output, but we don't care
-    auto r = Calamares::System::runCommand( { "blkid", path }, std::chrono::seconds( 30 ) );
+    auto r = CalamaresUtils::System::runCommand( { "blkid", path }, std::chrono::seconds( 30 ) );
     return r.getOutput().contains( "iso9660" );
 }
 
@@ -129,7 +127,11 @@ getDevices( DeviceType which )
         cWarning() << "No KPM backend found.";
         return {};
     }
+#if defined( WITH_KPMCORE4API )
     DeviceList devices = backend->scanDevices( /* not includeReadOnly, not includeLoopback */ ScanFlag( 0 ) );
+#else
+    DeviceList devices = backend->scanDevices( /* excludeReadOnly */ true );
+#endif
 
     /* The list of devices is cleaned up for use:
      *  - some devices can **never** be used (e.g. floppies, nullptr)

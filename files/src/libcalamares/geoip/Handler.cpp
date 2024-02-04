@@ -23,10 +23,10 @@
 
 #include <memory>
 
-static const NamedEnumTable< Calamares::GeoIP::Handler::Type >&
+static const NamedEnumTable< CalamaresUtils::GeoIP::Handler::Type >&
 handlerTypes()
 {
-    using Type = Calamares::GeoIP::Handler::Type;
+    using Type = CalamaresUtils::GeoIP::Handler::Type;
 
     // *INDENT-OFF*
     // clang-format off
@@ -42,7 +42,7 @@ handlerTypes()
     return names;
 }
 
-namespace Calamares
+namespace CalamaresUtils
 {
 namespace GeoIP
 {
@@ -113,9 +113,9 @@ do_query( Handler::Type type, const QString& url, const QString& selector )
         return RegionZonePair();
     }
 
-    using namespace Calamares::Network;
+    using namespace CalamaresUtils::Network;
     return interface->processReply(
-        Calamares::Network::Manager().synchronousGet( url, { RequestOptions::FakeUserAgent } ) );
+        CalamaresUtils::Network::Manager::instance().synchronousGet( url, { RequestOptions::FakeUserAgent } ) );
 }
 
 static QString
@@ -127,9 +127,9 @@ do_raw_query( Handler::Type type, const QString& url, const QString& selector )
         return QString();
     }
 
-    using namespace Calamares::Network;
+    using namespace CalamaresUtils::Network;
     return interface->rawReply(
-        Calamares::Network::Manager().synchronousGet( url, { RequestOptions::FakeUserAgent } ) );
+        CalamaresUtils::Network::Manager::instance().synchronousGet( url, { RequestOptions::FakeUserAgent } ) );
 }
 
 RegionZonePair
@@ -141,6 +141,7 @@ Handler::get() const
     }
     return do_query( m_type, m_url, m_selector );
 }
+
 
 QFuture< RegionZonePair >
 Handler::query() const
@@ -162,6 +163,7 @@ Handler::getRaw() const
     return do_raw_query( m_type, m_url, m_selector );
 }
 
+
 QFuture< QString >
 Handler::queryRaw() const
 {
@@ -173,4 +175,4 @@ Handler::queryRaw() const
 }
 
 }  // namespace GeoIP
-}  // namespace Calamares
+}  // namespace CalamaresUtils

@@ -8,7 +8,7 @@
  */
 #include "BlankViewStep.h"
 
-#include "utils/Gui.h"
+#include "utils/CalamaresUtilsGui.h"
 
 #include <QLabel>
 #include <QVBoxLayout>
@@ -31,7 +31,7 @@ BlankViewStep::BlankViewStep( const QString& title,
 
     auto* label = new QLabel( title );
     label->setAlignment( Qt::AlignHCenter );
-    label->setFont( Calamares::largeFont() );
+    label->setFont( CalamaresUtils::largeFont() );
     layout->addWidget( label );
 
     label = new QLabel( description );

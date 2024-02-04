@@ -12,6 +12,7 @@
 #include "LocaleNames.h"
 #include "timezonewidget/TimeZoneImage.h"
 
+#include "CalamaresVersion.h"
 #include "Settings.h"
 #include "locale/TimeZone.h"
 #include "locale/TranslationsModel.h"
@@ -64,9 +65,10 @@ private Q_SLOTS:
 private:
     QStringList m_KDEneonLocales;
     QStringList m_FreeBSDLocales;
+    QStringList m_availableLanguages;
 };
 
-QTEST_GUILESS_MAIN( LocaleTests )
+QTEST_MAIN( LocaleTests )
 
 
 LocaleTests::LocaleTests() {}
@@ -82,6 +84,7 @@ LocaleTests::initTestCase()
     {
         (void)new Calamares::Settings( true );
     }
+    m_availableLanguages = QString( CALAMARES_TRANSLATION_LANGUAGES ).split( ';' );
 }
 
 void
@@ -135,7 +138,7 @@ LocaleTests::testTZSanity()
     QVERIFY( QFile( "/usr/share/zoneinfo/zone.tab" ).exists() );
 
     // Contains a sensible number of total zones
-    const Calamares::Locale::ZonesModel zones;
+    const CalamaresUtils::Locale::ZonesModel zones;
     QVERIFY( zones.rowCount( QModelIndex() ) > 100 );
 }
 
@@ -171,7 +174,7 @@ LocaleTests::testTZImages()
     // Check zones are uniquely-claimed
     //
     //
-    using namespace Calamares::Locale;
+    using namespace CalamaresUtils::Locale;
     const ZonesModel m;
 
     int overlapcount = 0;
@@ -223,9 +226,9 @@ operator<( const QPoint& l, const QPoint& r )
 }
 
 void
-listAll( const QPoint& p, const Calamares::Locale::ZonesModel& zones )
+listAll( const QPoint& p, const CalamaresUtils::Locale::ZonesModel& zones )
 {
-    using namespace Calamares::Locale;
+    using namespace CalamaresUtils::Locale;
     for ( auto it = zones.begin(); it; ++it )
     {
         const auto* zone = *it;
@@ -244,7 +247,7 @@ listAll( const QPoint& p, const Calamares::Locale::ZonesModel& zones )
 void
 LocaleTests::testTZLocations()
 {
-    using namespace Calamares::Locale;
+    using namespace CalamaresUtils::Locale;
     ZonesModel zones;
 
     QVERIFY( zones.rowCount( QModelIndex() ) > 100 );
@@ -273,7 +276,7 @@ LocaleTests::testTZLocations()
 void
 LocaleTests::testSpecificLocations()
 {
-    Calamares::Locale::ZonesModel zones;
+    CalamaresUtils::Locale::ZonesModel zones;
     const auto* gibraltar = zones.find( "Europe", "Gibraltar" );
     const auto* ceuta = zones.find( "Africa", "Ceuta" );
     QVERIFY( gibraltar );
@@ -310,8 +313,7 @@ LocaleTests::testLanguageDetection_data()
                                     << QStringLiteral( "en_US.UTF-8" );
     QTest::newRow( "english (GB)" ) << QStringLiteral( "en" ) << QStringLiteral( "GB" )
                                     << QStringLiteral( "en_GB.UTF-8" );
-    QTest::newRow( "english (NL)" ) << QStringLiteral( "en" ) << QStringLiteral( "NL" )
-                                    << QStringLiteral( "en_US.UTF-8" );
+    QTest::newRow( "english (NL)" ) << QStringLiteral( "en" ) << QStringLiteral( "NL" ) << QStringLiteral( "en_US.UTF-8" );
 
     QTest::newRow( "portuguese (PT)" ) << QStringLiteral( "pt" ) << QStringLiteral( "PT" )
                                        << QStringLiteral( "pt_PT.UTF-8" );
@@ -474,7 +476,7 @@ LocaleTests::testLanguageMappingNeon()
     QFETCH( QString, KDEneonLanguage );
     QFETCH( QString, FreeBSDLanguage );
 
-    QVERIFY( Calamares::Locale::availableLanguages().contains( selectedLanguage ) );
+    QVERIFY( m_availableLanguages.contains( selectedLanguage ) );
 
     const auto neon = LocaleConfiguration::fromLanguageAndLocation(
         ( selectedLanguage ), m_KDEneonLocales, QStringLiteral( "NL" ) );
@@ -491,7 +493,7 @@ LocaleTests::testLanguageMappingFreeBSD()
     QFETCH( QString, KDEneonLanguage );
     QFETCH( QString, FreeBSDLanguage );
 
-    QVERIFY( Calamares::Locale::availableLanguages().contains( selectedLanguage ) );
+    QVERIFY( m_availableLanguages.contains( selectedLanguage ) );
 
     const auto bsd = LocaleConfiguration::fromLanguageAndLocation(
         ( selectedLanguage ), m_FreeBSDLocales, QStringLiteral( "NL" ) );

@@ -42,8 +42,8 @@
 #include <QProcess>
 #include <QPushButton>
 
-using Calamares::Partition::untranslatedFS;
-using Calamares::Partition::userVisibleFS;
+using CalamaresUtils::Partition::untranslatedFS;
+using CalamaresUtils::Partition::userVisibleFS;
 
 EditExistingPartitionDialog::EditExistingPartitionDialog( Device* device,
                                                           Partition* partition,

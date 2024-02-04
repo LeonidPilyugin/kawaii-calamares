@@ -14,14 +14,15 @@
 #include "ItemAppData.h"
 #endif
 
-#ifdef HAVE_APPSTREAM_VERSION
+#ifdef HAVE_APPSTREAM
 #include "ItemAppStream.h"
+#include <AppStreamQt/pool.h>
 #include <memory>
 #endif
 
+
 #include "GlobalStorage.h"
 #include "JobQueue.h"
-#include "compat/Variant.h"
 #include "packages/Globals.h"
 #include "utils/Logger.h"
 #include "utils/Variant.h"
@@ -112,9 +113,9 @@ Config::introductionPackage() const
             = QT_TR_NOOP( "Please pick a product from the list. The selected product will be installed." );
         defaultIntroduction = new PackageItem( QString(), name, description );
         defaultIntroduction->screenshot = QPixmap( QStringLiteral( ":/images/no-selection.png" ) );
-        defaultIntroduction->name = Calamares::Locale::TranslatedString( name, metaObject()->className() );
+        defaultIntroduction->name = CalamaresUtils::Locale::TranslatedString( name, metaObject()->className() );
         defaultIntroduction->description
-            = Calamares::Locale::TranslatedString( description, metaObject()->className() );
+            = CalamaresUtils::Locale::TranslatedString( description, metaObject()->className() );
     }
     return *defaultIntroduction;
 }
@@ -142,7 +143,7 @@ Config::updateGlobalStorage( const QStringList& selected ) const
     {
         QStringList packageNames = m_model->getInstallPackagesForNames( selected );
         cDebug() << m_defaultId << "packages to install" << packageNames;
-        Calamares::Packages::setGSPackageAdditions(
+        CalamaresUtils::Packages::setGSPackageAdditions(
             Calamares::JobQueue::instance()->globalStorage(), m_defaultId, packageNames );
     }
     else if ( m_method == PackageChooserMethod::NetAdd )
@@ -174,7 +175,7 @@ Config::updateGlobalStorage( const QStringList& selected ) const
         if ( gs->contains( "netinstallSelect" ) )
         {
             auto selectedOrig = gs->value( "netinstallSelect" );
-            if ( selectedOrig.canConvert< QStringList >() )
+            if ( selectedOrig.canConvert( QVariant::StringList ) )
             {
                 newSelected += selectedOrig.toStringList();
             }
@@ -221,6 +222,7 @@ Config::updateGlobalStorage() const
     }
 }
 
+
 void
 Config::setPackageChoice( const QString& packageChoice )
 {
@@ -256,7 +258,7 @@ fillModel( PackageListModel* model, const QVariantList& items )
         return;
     }
 
-#ifdef HAVE_APPSTREAM_VERSION
+#ifdef HAVE_APPSTREAM
     std::unique_ptr< AppStream::Pool > pool;
     bool poolOk = false;
 #endif
@@ -283,7 +285,7 @@ fillModel( PackageListModel* model, const QVariantList& items )
         }
         else if ( item_map.contains( "appstream" ) )
         {
-#ifdef HAVE_APPSTREAM_VERSION
+#ifdef HAVE_APPSTREAM
             if ( !pool )
             {
                 pool = std::make_unique< AppStream::Pool >();
@@ -309,9 +311,9 @@ fillModel( PackageListModel* model, const QVariantList& items )
 void
 Config::setConfigurationMap( const QVariantMap& configurationMap )
 {
-    m_mode = packageChooserModeNames().find( Calamares::getString( configurationMap, "mode" ),
+    m_mode = packageChooserModeNames().find( CalamaresUtils::getString( configurationMap, "mode" ),
                                              PackageChooserMode::Required );
-    m_method = PackageChooserMethodNames().find( Calamares::getString( configurationMap, "method" ),
+    m_method = PackageChooserMethodNames().find( CalamaresUtils::getString( configurationMap, "method" ),
                                                  PackageChooserMethod::Legacy );
 
     if ( m_method == PackageChooserMethod::Legacy )
@@ -323,7 +325,7 @@ Config::setConfigurationMap( const QVariantMap& configurationMap )
     {
         fillModel( m_model, configurationMap.value( "items" ).toList() );
 
-        QString default_item_id = Calamares::getString( configurationMap, "default" );
+        QString default_item_id = CalamaresUtils::getString( configurationMap, "default" );
         if ( !default_item_id.isEmpty() )
         {
             for ( int item_n = 0; item_n < m_model->packageCount(); ++item_n )
@@ -341,7 +343,7 @@ Config::setConfigurationMap( const QVariantMap& configurationMap )
     }
     else
     {
-        setPackageChoice( Calamares::getString( configurationMap, "packageChoice" ) );
+        setPackageChoice( CalamaresUtils::getString( configurationMap, "packageChoice" ) );
         if ( m_method != PackageChooserMethod::Legacy )
         {
             cWarning() << "Single-selection QML module must use 'Legacy' method.";
@@ -349,12 +351,12 @@ Config::setConfigurationMap( const QVariantMap& configurationMap )
     }
 
     bool labels_ok = false;
-    auto labels = Calamares::getSubMap( configurationMap, "labels", labels_ok );
+    auto labels = CalamaresUtils::getSubMap( configurationMap, "labels", labels_ok );
     if ( labels_ok )
     {
         if ( labels.contains( "step" ) )
         {
-            m_stepName = new Calamares::Locale::TranslatedString( labels, "step" );
+            m_stepName = new CalamaresUtils::Locale::TranslatedString( labels, "step" );
         }
     }
 }

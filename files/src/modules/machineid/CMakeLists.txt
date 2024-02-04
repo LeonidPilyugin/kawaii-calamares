@@ -12,4 +12,10 @@ calamares_add_plugin(machineid
     SHARED_LIB
 )
 
-calamares_add_test(machineidtest SOURCES Tests.cpp MachineIdJob.cpp Workers.cpp)
+calamares_add_test(
+    machineidtest
+    SOURCES
+        Tests.cpp
+        MachineIdJob.cpp
+        Workers.cpp
+)

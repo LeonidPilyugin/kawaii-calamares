@@ -17,35 +17,31 @@
 #include <QVariant>
 
 #include <chrono>
-#include <utility>
 
-class KMacroExpanderBase;
-
-namespace Calamares
+namespace CalamaresUtils
 {
-using CommandLineBase = std::pair< QString, std::chrono::seconds >;
 
 /**
  * Each command can have an associated timeout in seconds. The timeout
  * defaults to 10 seconds. Provide some convenience naming and construction.
  */
-struct CommandLine : public CommandLineBase
+struct CommandLine : public QPair< QString, std::chrono::seconds >
 {
     static inline constexpr std::chrono::seconds TimeoutNotSet() { return std::chrono::seconds( -1 ); }
 
     /// An invalid command line
     CommandLine()
-        : CommandLineBase( QString(), TimeoutNotSet() )
+        : QPair( QString(), TimeoutNotSet() )
     {
     }
 
     CommandLine( const QString& s )
-        : CommandLineBase( s, TimeoutNotSet() )
+        : QPair( s, TimeoutNotSet() )
     {
     }
 
     CommandLine( const QString& s, std::chrono::seconds t )
-        : CommandLineBase( s, t )
+        : QPair( s, t )
     {
     }
 
@@ -54,20 +50,6 @@ struct CommandLine : public CommandLineBase
     std::chrono::seconds timeout() const { return second; }
 
     bool isValid() const { return !first.isEmpty(); }
-
-    /** @brief Returns a copy of this one command, with variables expanded
-     *
-     * The given macro-expander is used to expand the command-line.
-     * This will normally be a Calamares::String::DictionaryExpander
-     * instance, which handles the ROOT and USER variables.
-     */
-    CommandLine expand( KMacroExpanderBase& expander ) const;
-    /** @brief As above, with a default macro-expander.
-     *
-     * The default macro-expander assumes RunInHost (e.g. ROOT will
-     * expand to the RootMountPoint set in Global Storage).
-     */
-    CommandLine expand() const;
 };
 
 /** @brief Abbreviation, used internally. */
@@ -87,6 +69,7 @@ public:
     /** @brief empty command-list with timeout to apply to entries. */
     CommandList( bool doChroot = true, std::chrono::seconds timeout = std::chrono::seconds( 10 ) );
     CommandList( const QVariant& v, bool doChroot = true, std::chrono::seconds timeout = std::chrono::seconds( 10 ) );
+    ~CommandList();
 
     bool doChroot() const { return m_doChroot; }
 
@@ -98,26 +81,15 @@ public:
     using CommandList_t::const_iterator;
     using CommandList_t::count;
     using CommandList_t::isEmpty;
-    using CommandList_t::push_back;
-    using CommandList_t::value_type;
 
-    /** @brief Return a copy of this command-list, with variables expanded
-     *
-     * Each command-line in the list is expanded with the given @p expander.
-     * @see CommandLine::expand() for details.
-     */
-    CommandList expand( KMacroExpanderBase& expander ) const;
-    /** @brief As above, with a default macro-expander.
-     *
-     * Each command-line in the list is expanded with that default macro-expander.
-     * @see CommandLine::expand() for details.
-     */
-    CommandList expand() const;
+protected:
+    using CommandList_t::append;
+    void append( const QString& );
 
 private:
     bool m_doChroot;
     std::chrono::seconds m_timeout;
 };
 
-}  // namespace Calamares
+}  // namespace CalamaresUtils
 #endif

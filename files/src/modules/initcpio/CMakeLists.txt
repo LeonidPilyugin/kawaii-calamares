@@ -13,7 +13,8 @@ calamares_add_plugin(initcpio
 
 calamares_add_test(
     initcpiotest
-    SOURCES Tests.cpp
+    SOURCES
+        Tests.cpp
     LIBRARIES
         calamares_job_initcpio # From above
         yamlcpp::yamlcpp

@@ -30,11 +30,6 @@ public:
     QString prettyName() const override;
 
     Calamares::JobResult exec() override;
-
-    void setConfigurationMap( const QVariantMap& configurationMap ) override;
-
-private:
-    QString m_luks2Hash;
 };
 
 CALAMARES_PLUGIN_FACTORY_DECLARATION( LuksBootKeyFileJobFactory )

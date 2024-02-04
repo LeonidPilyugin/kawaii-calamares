@@ -92,6 +92,7 @@ LoaderQueue::load()
     QMetaObject::invokeMethod( this, "fetchNext", Qt::QueuedConnection );
 }
 
+
 void
 LoaderQueue::fetchNext()
 {
@@ -125,10 +126,10 @@ LoaderQueue::fetch( const QUrl& url )
         return;
     }
 
-    using namespace Calamares::Network;
+    using namespace CalamaresUtils::Network;
 
     cDebug() << "NetInstall loading groups from" << url;
-    QNetworkReply* reply = Manager().asynchronousGet(
+    QNetworkReply* reply = Manager::instance().asynchronousGet(
         url,
         RequestOptions( RequestOptions::FakeUserAgent | RequestOptions::FollowRedirect, std::chrono::seconds( 30 ) ) );
 
@@ -179,16 +180,16 @@ LoaderQueue::dataArrived()
     QByteArray yamlData = m_reply->readAll();
     try
     {
-        auto groups = ::YAML::Load( yamlData.constData() );
+        YAML::Node groups = YAML::Load( yamlData.constData() );
 
         if ( groups.IsSequence() )
         {
-            m_config->loadGroupList( Calamares::YAML::sequenceToVariant( groups ) );
+            m_config->loadGroupList( CalamaresUtils::yamlSequenceToVariant( groups ) );
             next.done( m_config->statusCode() == Config::Status::Ok );
         }
         else if ( groups.IsMap() )
         {
-            auto map = Calamares::YAML::mapToVariant( groups );
+            auto map = CalamaresUtils::yamlMapToVariant( groups );
             m_config->loadGroupList( map.value( "groups" ).toList() );
             next.done( m_config->statusCode() == Config::Status::Ok );
         }
@@ -197,9 +198,9 @@ LoaderQueue::dataArrived()
             cWarning() << "NetInstall groups data does not form a sequence.";
         }
     }
-    catch ( ::YAML::Exception& e )
+    catch ( YAML::Exception& e )
     {
-        Calamares::YAML::explainException( e, yamlData, "netinstall groups data" );
+        CalamaresUtils::explainYamlException( e, yamlData, "netinstall groups data" );
         m_config->setStatus( Config::Status::FailedBadData );
     }
 }

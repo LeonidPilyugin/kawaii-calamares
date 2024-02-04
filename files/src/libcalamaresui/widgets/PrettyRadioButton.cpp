@@ -9,7 +9,7 @@
 
 #include "PrettyRadioButton.h"
 
-#include "utils/Gui.h"
+#include "utils/CalamaresUtilsGui.h"
 #include "widgets/ClickableLabel.h"
 
 #include <QButtonGroup>
@@ -19,8 +19,6 @@
 #include <QLabel>
 
 namespace Calamares
-{
-namespace Widgets
 {
 
 PrettyRadioButton::PrettyRadioButton( QWidget* parent )
@@ -126,5 +124,5 @@ PrettyRadioButton::toggleOptions( bool toggle )
         m_optionsLayout->parentWidget()->setVisible( toggle );
     }
 }
-}  // namespace Widgets
+
 }  // namespace Calamares

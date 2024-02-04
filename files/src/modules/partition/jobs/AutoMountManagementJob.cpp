@@ -19,7 +19,7 @@ AutoMountManagementJob::AutoMountManagementJob( bool disable )
 QString
 AutoMountManagementJob::prettyName() const
 {
-    return tr( "Managing auto-mount settings…", "@status" );
+    return tr( "Manage auto-mount settings" );
 }
 
 Calamares::JobResult
@@ -28,13 +28,13 @@ AutoMountManagementJob::exec()
     if ( m_stored )
     {
         cDebug() << "Restore automount settings";
-        Calamares::Partition::automountRestore( m_stored );
+        CalamaresUtils::Partition::automountRestore( m_stored );
         m_stored.reset();
     }
     else
     {
         cDebug() << "Set automount to" << ( m_disable ? "disable" : "enable" );
-        m_stored = Calamares::Partition::automountDisable( m_disable );
+        m_stored = CalamaresUtils::Partition::automountDisable( m_disable );
     }
     return Calamares::JobResult::ok();
 }

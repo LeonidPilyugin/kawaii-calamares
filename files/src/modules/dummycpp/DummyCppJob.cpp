@@ -18,40 +18,42 @@
 #include "GlobalStorage.h"
 #include "JobQueue.h"
 
-#include "compat/Variant.h"
+#include "utils/CalamaresUtilsSystem.h"
 #include "utils/Logger.h"
-#include "utils/System.h"
 
 DummyCppJob::DummyCppJob( QObject* parent )
     : Calamares::CppJob( parent )
 {
 }
 
+
 DummyCppJob::~DummyCppJob() {}
+
 
 QString
 DummyCppJob::prettyName() const
 {
-    return tr( "Performing dummy C++ job…", "@status" );
+    return tr( "Dummy C++ Job" );
 }
+
 
 static QString variantListToString( const QVariantList& variantList );
 static QString variantMapToString( const QVariantMap& variantMap );
 static QString variantHashToString( const QVariantHash& variantHash );
 
+
 static QString
 variantToString( const QVariant& variant )
 {
-    if ( Calamares::typeOf( variant ) == Calamares::MapVariantType )
+    if ( variant.type() == QVariant::Map )
     {
         return variantMapToString( variant.toMap() );
     }
-    else if ( Calamares::typeOf( variant ) == Calamares::HashVariantType )
+    else if ( variant.type() == QVariant::Hash )
     {
         return variantHashToString( variant.toHash() );
     }
-    else if ( ( Calamares::typeOf( variant ) == Calamares::ListVariantType )
-              || ( Calamares::typeOf( variant ) == Calamares::StringListVariantType ) )
+    else if ( ( variant.type() == QVariant::List ) || ( variant.type() == QVariant::StringList ) )
     {
         return variantListToString( variant.toList() );
     }
@@ -60,6 +62,7 @@ variantToString( const QVariant& variant )
         return variant.toString();
     }
 }
+
 
 static QString
 variantListToString( const QVariantList& variantList )
@@ -72,6 +75,7 @@ variantListToString( const QVariantList& variantList )
     return '{' + result.join( ',' ) + '}';
 }
 
+
 static QString
 variantMapToString( const QVariantMap& variantMap )
 {
@@ -82,6 +86,7 @@ variantMapToString( const QVariantMap& variantMap )
     }
     return '[' + result.join( ',' ) + ']';
 }
+
 
 static QString
 variantHashToString( const QVariantHash& variantHash )
@@ -94,14 +99,15 @@ variantHashToString( const QVariantHash& variantHash )
     return '<' + result.join( ',' ) + '>';
 }
 
+
 Calamares::JobResult
 DummyCppJob::exec()
 {
     // Ported from dummypython
-    Calamares::System::runCommand( Calamares::System::RunLocation::RunInHost,
-                                   QStringList() << "/bin/sh"
-                                                 << "-c"
-                                                 << "touch ~/calamares-dummycpp" );
+    CalamaresUtils::System::runCommand( CalamaresUtils::System::RunLocation::RunInHost,
+                                        QStringList() << "/bin/sh"
+                                                      << "-c"
+                                                      << "touch ~/calamares-dummycpp" );
     QString accumulator = QDateTime::currentDateTimeUtc().toString( Qt::ISODate ) + '\n';
     accumulator += QStringLiteral( "Calamares version: " ) + CALAMARES_VERSION_SHORT + '\n';
     accumulator += QStringLiteral( "This job's name: " ) + prettyName() + '\n';
@@ -132,6 +138,7 @@ DummyCppJob::exec()
 
     return Calamares::JobResult::ok();
 }
+
 
 void
 DummyCppJob::setConfigurationMap( const QVariantMap& configurationMap )

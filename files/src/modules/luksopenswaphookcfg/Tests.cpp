@@ -10,8 +10,8 @@
 
 #include "GlobalStorage.h"
 #include "JobQueue.h"
+#include "utils/CalamaresUtilsSystem.h"
 #include "utils/Logger.h"
-#include "utils/System.h"
 
 #include <QtTest/QtTest>
 
@@ -48,6 +48,7 @@ LOSHTests::initTestCase()
     cDebug() << "LOSH test started.";
 }
 
+
 void
 LOSHTests::testAssignmentExtraction_data()
 {
@@ -63,6 +64,7 @@ LOSHTests::testAssignmentExtraction_data()
     QTest::newRow( "comment-story" ) << QStringLiteral( "# This is a shell comment" ) << QString();
     // We look for assignments, but only for single-words
     QTest::newRow( "comment-space-eq" ) << QStringLiteral( "# Check that a = b" ) << QString();
+
 
     QTest::newRow( "assignment1" ) << QStringLiteral( "a=1" ) << QStringLiteral( "a" );
     QTest::newRow( "assignment2" ) << QStringLiteral( "a = 1" ) << QStringLiteral( "a" );
@@ -88,13 +90,13 @@ LOSHTests::testAssignmentExtraction()
     QCOMPARE( get_assignment_part( line ), match );
 }
 
-static Calamares::System*
+static CalamaresUtils::System*
 file_setup( const QTemporaryDir& tempRoot )
 {
-    Calamares::System* ss = Calamares::System::instance();
+    CalamaresUtils::System* ss = CalamaresUtils::System::instance();
     if ( !ss )
     {
-        ss = new Calamares::System( true );
+        ss = new CalamaresUtils::System( true );
     }
 
     Calamares::GlobalStorage* gs
@@ -133,6 +135,7 @@ LOSHTests::testLOSHInfo()
     QCOMPARE( i.replacementFor( QStringLiteral( "swap_device" ) ), QStringLiteral( "/dev/sda0" ) );
     QCOMPARE( i.replacementFor( QStringLiteral( "duck" ) ), QString() );
 }
+
 
 void
 LOSHTests::testConfigWriting()
@@ -196,6 +199,7 @@ LOSHTests::testConfigWriting()
     QCOMPARE( contents.at( 1 ), QStringLiteral( "swap_device=/dev/zram/0.zram" ) );  // expected line
 }
 
+
 void
 LOSHTests::testJob()
 {
@@ -240,6 +244,7 @@ LOSHTests::testJob()
         cDebug() << f.readAll();
     }
 }
+
 
 QTEST_GUILESS_MAIN( LOSHTests )
 

@@ -57,10 +57,18 @@ KPMTests::testFlagNames()
 
     QCOMPARE( PartitionTable::flagName( static_cast< PartitionTable::Flag >( 1 ) ), QStringLiteral( "boot" ) );
 
+#ifdef WITH_KPMCORE4API
     // KPMCore 4 unifies the flags and handles them internally
     QCOMPARE( PartitionTable::flagName( PartitionTable::Flag::Boot ), QStringLiteral( "boot" ) );
     QVERIFY( names.contains( QStringLiteral( "boot" ) ) );
     QVERIFY( !names.contains( QStringLiteral( "esp" ) ) );
+#else
+    // KPMCore 3 has separate flags
+    QCOMPARE( PartitionTable::flagName( PartitionTable::FlagBoot ), QStringLiteral( "boot" ) );
+    QCOMPARE( PartitionTable::flagName( PartitionTable::FlagEsp ), QStringLiteral( "esp" ) );
+    QVERIFY( names.contains( QStringLiteral( "boot" ) ) );
+    QVERIFY( names.contains( QStringLiteral( "esp" ) ) );
+#endif
 }
 
 void
@@ -89,7 +97,7 @@ KPMTests::testFSNames()
     calaFSNames.reserve( fstypes.count() );
     for ( const auto t : fstypes )
     {
-        QString s = Calamares::Partition::untranslatedFS( t );
+        QString s = CalamaresUtils::Partition::untranslatedFS( t );
         calaFSNames.append( s );
     }
 

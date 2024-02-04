@@ -13,7 +13,8 @@
 
 #include <type_traits>
 
-namespace Calamares
+
+namespace CalamaresUtils
 {
 
 /** @brief Traits machinery lives in this namespace
@@ -53,10 +54,10 @@ struct sfinae_true : std::true_type
 {
 };
 }  // namespace Traits
-}  // namespace Calamares
+}  // namespace CalamaresUtils
 
 #define DECLARE_HAS_METHOD( m ) \
-    namespace Calamares \
+    namespace CalamaresUtils \
     { \
     namespace Traits \
     { \
@@ -72,6 +73,6 @@ struct sfinae_true : std::true_type
     } \
     } \
     template < class T > \
-    using has_##m = Calamares::Traits::has_##m ::t< T >;
+    using has_##m = CalamaresUtils::Traits::has_##m ::t< T >;
 
 #endif

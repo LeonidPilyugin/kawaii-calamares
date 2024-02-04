@@ -14,9 +14,9 @@
 
 #include "GlobalStorage.h"
 #include "JobQueue.h"
+#include "utils/CalamaresUtilsSystem.h"
 #include "utils/CommandList.h"
 #include "utils/Logger.h"
-#include "utils/System.h"
 #include "utils/Yaml.h"
 
 #include <QtTest/QtTest>
@@ -26,7 +26,7 @@
 
 QTEST_GUILESS_MAIN( ContextualProcessTests )
 
-using CommandList = Calamares::CommandList;
+using CommandList = CalamaresUtils::CommandList;
 
 ContextualProcessTests::ContextualProcessTests() {}
 
@@ -38,7 +38,7 @@ ContextualProcessTests::initTestCase()
     Logger::setupLogLevel( Logger::LOGDEBUG );
 
     // Ensure we have a system object, expect it to be a "bogus" one
-    Calamares::System* system = Calamares::System::instance();
+    CalamaresUtils::System* system = CalamaresUtils::System::instance();
     QVERIFY( system );
     QVERIFY( system->doChroot() );
 
@@ -70,7 +70,7 @@ ContextualProcessTests::testProcessListSampleConfig()
     }
 
     ContextualProcessJob job;
-    job.setConfigurationMap( Calamares::YAML::mapToVariant( doc ) );
+    job.setConfigurationMap( CalamaresUtils::yamlMapToVariant( doc ) );
 
     QCOMPARE( job.count(), 2 );  // Only "firmwareType" and "branding.shortVersion"
     QCOMPARE( job.count( "firmwareType" ), 4 );

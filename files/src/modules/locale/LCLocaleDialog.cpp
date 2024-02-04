@@ -20,7 +20,7 @@ LCLocaleDialog::LCLocaleDialog( const QString& guessedLCLocale, const QStringLis
     : QDialog( parent )
 {
     setModal( true );
-    setWindowTitle( tr( "System Locale Setting", "@title" ) );
+    setWindowTitle( tr( "System locale setting" ) );
 
     QBoxLayout* mainLayout = new QVBoxLayout;
     setLayout( mainLayout );
@@ -29,7 +29,7 @@ LCLocaleDialog::LCLocaleDialog( const QString& guessedLCLocale, const QStringLis
     upperText->setWordWrap( true );
     upperText->setText( tr( "The system locale setting affects the language and character "
                             "set for some command line user interface elements.<br/>"
-                            "The current setting is <strong>%1</strong>.", "@info" )
+                            "The current setting is <strong>%1</strong>." )
                             .arg( guessedLCLocale ) );
     mainLayout->addWidget( upperText );
     setMinimumWidth( upperText->fontMetrics().height() * 24 );
@@ -51,8 +51,8 @@ LCLocaleDialog::LCLocaleDialog( const QString& guessedLCLocale, const QStringLis
 
     QDialogButtonBox* dbb
         = new QDialogButtonBox( QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, this );
-    dbb->button( QDialogButtonBox::Cancel )->setText( tr( "&Cancel", "@button" ) );
-    dbb->button( QDialogButtonBox::Ok )->setText( tr( "&OK", "@button" ) );
+    dbb->button( QDialogButtonBox::Cancel )->setText( tr( "&Cancel" ) );
+    dbb->button( QDialogButtonBox::Ok )->setText( tr( "&OK" ) );
 
     mainLayout->addWidget( dbb );
 

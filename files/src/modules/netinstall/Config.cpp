@@ -16,7 +16,6 @@
 
 #include "GlobalStorage.h"
 #include "JobQueue.h"
-#include "compat/Variant.h"
 #include "network/Manager.h"
 #include "packages/Globals.h"
 #include "utils/Logger.h"
@@ -42,6 +41,7 @@ Config::retranslate()
     emit titleLabelChanged( titleLabel() );
 }
 
+
 QString
 Config::status() const
 {
@@ -63,6 +63,7 @@ Config::status() const
     __builtin_unreachable();
 }
 
+
 void
 Config::setStatus( Status s )
 {
@@ -81,6 +82,7 @@ Config::titleLabel() const
 {
     return m_titleLabel ? m_titleLabel->get() : QString();
 }
+
 
 void
 Config::loadGroupList( const QVariantList& groupData )
@@ -108,14 +110,15 @@ Config::loadingDone()
     emit statusReady();
 }
 
+
 void
 Config::setConfigurationMap( const QVariantMap& configurationMap )
 {
-    setRequired( Calamares::getBool( configurationMap, "required", false ) );
+    setRequired( CalamaresUtils::getBool( configurationMap, "required", false ) );
 
     // Get the translations, if any
     bool bogus = false;
-    auto label = Calamares::getSubMap( configurationMap, "label", bogus );
+    auto label = CalamaresUtils::getSubMap( configurationMap, "label", bogus );
     // Use a different class name for translation lookup because the
     // .. table of strings lives in NetInstallViewStep.cpp and moving them
     // .. around is annoying for translators.
@@ -123,22 +126,22 @@ Config::setConfigurationMap( const QVariantMap& configurationMap )
 
     if ( label.contains( "sidebar" ) )
     {
-        m_sidebarLabel = new Calamares::Locale::TranslatedString( label, "sidebar", className );
+        m_sidebarLabel = new CalamaresUtils::Locale::TranslatedString( label, "sidebar", className );
     }
     if ( label.contains( "title" ) )
     {
-        m_titleLabel = new Calamares::Locale::TranslatedString( label, "title", className );
+        m_titleLabel = new CalamaresUtils::Locale::TranslatedString( label, "title", className );
     }
 
     // Lastly, load the groups data
     const QString key = QStringLiteral( "groupsUrl" );
     const auto& groupsUrlVariant = configurationMap.value( key );
     m_queue = new LoaderQueue( this );
-    if ( Calamares::typeOf( groupsUrlVariant ) == Calamares::StringVariantType )
+    if ( groupsUrlVariant.type() == QVariant::String )
     {
         m_queue->append( SourceItem::makeSourceItem( groupsUrlVariant.toString(), configurationMap ) );
     }
-    else if ( Calamares::typeOf( groupsUrlVariant ) == Calamares::ListVariantType )
+    else if ( groupsUrlVariant.type() == QVariant::List )
     {
         for ( const auto& s : groupsUrlVariant.toStringList() )
         {
@@ -174,6 +177,6 @@ Config::finalizeGlobalStorage( const Calamares::ModuleSystem::InstanceKey& key )
         }
     }
 
-    Calamares::Packages::setGSPackageAdditions(
+    CalamaresUtils::Packages::setGSPackageAdditions(
         Calamares::JobQueue::instance()->globalStorage(), key, installPackages, tryInstallPackages );
 }

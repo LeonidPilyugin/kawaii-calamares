@@ -88,6 +88,7 @@ BrandingLoader::tryLoad( QTranslator* translator )
     QString filenameBase( m_prefix );
     filenameBase.remove( 0, lastDirSeparator + 1 );
 
+
     if ( QDir( brandingTranslationsDirPath ).exists() )
     {
         const QString fileName = QStringLiteral( "%1_%2" ).arg( filenameBase, m_localeName );
@@ -118,7 +119,7 @@ tryLoad( QTranslator* translator, const QString& prefix, const QString& localeNa
     }
 
     // Or load from appDataDir -- often /usr/share/calamares -- subdirectory land/
-    QDir localeData( Calamares::appDataDir() );
+    QDir localeData( CalamaresUtils::appDataDir() );
     if ( localeData.exists()
          && translator->load( localeData.absolutePath() + QStringLiteral( "/lang/" ) + prefix + localeName ) )
     {
@@ -169,7 +170,7 @@ loadSingletonTranslator( TranslationLoader&& loader, QTranslator*& translator_p 
 
 }  // namespace
 
-namespace Calamares
+namespace CalamaresUtils
 {
 static QTranslator* s_brandingTranslator = nullptr;
 static QTranslator* s_translator = nullptr;
@@ -177,7 +178,7 @@ static QTranslator* s_tztranslator = nullptr;
 static QString s_translatorLocaleName;
 
 void
-installTranslator( const Calamares::Locale::Translation::Id& locale, const QString& brandingTranslationsPrefix )
+installTranslator( const CalamaresUtils::Locale::Translation::Id& locale, const QString& brandingTranslationsPrefix )
 {
     s_translatorLocaleName = locale.name;
 
@@ -189,17 +190,17 @@ installTranslator( const Calamares::Locale::Translation::Id& locale, const QStri
 void
 installTranslator()
 {
-    installTranslator( Calamares::Locale::Translation().id(), QString() );
+    installTranslator( CalamaresUtils::Locale::Translation().id(), QString() );
 }
 
-Calamares::Locale::Translation::Id
+CalamaresUtils::Locale::Translation::Id
 translatorLocaleName()
 {
     return { s_translatorLocaleName };
 }
 
 bool
-loadTranslator( const Calamares::Locale::Translation::Id& locale, const QString& prefix, QTranslator* translator )
+loadTranslator( const CalamaresUtils::Locale::Translation::Id& locale, const QString& prefix, QTranslator* translator )
 {
     return ::tryLoad( translator, prefix, locale.name );
 }
@@ -240,4 +241,5 @@ setAllowLocalTranslation( bool allow )
     s_allowLocalTranslations = allow;
 }
 
-}  // namespace Calamares
+
+}  // namespace CalamaresUtils

@@ -14,7 +14,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 mode_t
 setUMask( mode_t u )
@@ -34,4 +34,4 @@ UMask::~UMask()
 
 static_assert( UMask::Safe == ( S_IRGRP | S_IWGRP | S_IXGRP | S_IROTH | S_IWOTH | S_IXOTH ), "Bad permissions." );
 
-}  // namespace Calamares
+}  // namespace CalamaresUtils

@@ -10,14 +10,13 @@
 
 #include "GeoIPJSON.h"
 
-#include "compat/Variant.h"
 #include "utils/Logger.h"
 #include "utils/Variant.h"
 #include "utils/Yaml.h"
 
 #include <QByteArray>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 namespace GeoIP
 {
@@ -44,14 +43,14 @@ selectMap( const QVariantMap& m, const QStringList& l, int index )
     QString attributeName = l[ index ];
     if ( index == l.count() - 1 )
     {
-        return Calamares::getString( m, attributeName );
+        return CalamaresUtils::getString( m, attributeName );
     }
     else
     {
         bool success = false;  // bogus
         if ( m.contains( attributeName ) )
         {
-            return selectMap( Calamares::getSubMap( m, attributeName, success ), l, index + 1 );
+            return selectMap( CalamaresUtils::getSubMap( m, attributeName, success ), l, index + 1 );
         }
         return QString();
     }
@@ -62,10 +61,10 @@ GeoIPJSON::rawReply( const QByteArray& data )
 {
     try
     {
-        auto doc = ::YAML::Load( data );
+        YAML::Node doc = YAML::Load( data );
 
-        QVariant var = Calamares::YAML::toVariant( doc );
-        if ( !var.isNull() && var.isValid() && Calamares::typeOf( var ) == Calamares::MapVariantType )
+        QVariant var = CalamaresUtils::yamlToVariant( doc );
+        if ( !var.isNull() && var.isValid() && var.type() == QVariant::Map )
         {
             return selectMap( var.toMap(), m_element.split( '.' ), 0 );
         }
@@ -74,9 +73,9 @@ GeoIPJSON::rawReply( const QByteArray& data )
             cWarning() << "Invalid YAML data for GeoIPJSON";
         }
     }
-    catch ( ::YAML::Exception& e )
+    catch ( YAML::Exception& e )
     {
-        Calamares::YAML::explainException( e, data, "GeoIP data" );
+        CalamaresUtils::explainYamlException( e, data, "GeoIP data" );
     }
 
     return QString();
@@ -89,4 +88,4 @@ GeoIPJSON::processReply( const QByteArray& data )
 }
 
 }  // namespace GeoIP
-}  // namespace Calamares
+}  // namespace CalamaresUtils

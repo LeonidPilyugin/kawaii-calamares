@@ -25,52 +25,23 @@ Config::Config( QObject* parent )
 const NamedEnumTable< Config::InstallChoice >&
 Config::installChoiceNames()
 {
-    // *INDENT-OFF*
-    // clang-format off
-    static const NamedEnumTable< InstallChoice > names {
-        { QStringLiteral( "none" ), InstallChoice::NoChoice },
-        { QStringLiteral( "nochoice" ), InstallChoice::NoChoice },
-        { QStringLiteral( "alongside" ), InstallChoice::Alongside },
-        { QStringLiteral( "erase" ), InstallChoice::Erase },
-        { QStringLiteral( "replace" ), InstallChoice::Replace },
-        { QStringLiteral( "manual" ), InstallChoice::Manual },
-    };
-    // clang-format on
-    // *INDENT-ON*
-
+    static const NamedEnumTable< InstallChoice > names { { QStringLiteral( "none" ), InstallChoice::NoChoice },
+                                                         { QStringLiteral( "nochoice" ), InstallChoice::NoChoice },
+                                                         { QStringLiteral( "alongside" ), InstallChoice::Alongside },
+                                                         { QStringLiteral( "erase" ), InstallChoice::Erase },
+                                                         { QStringLiteral( "replace" ), InstallChoice::Replace },
+                                                         { QStringLiteral( "manual" ), InstallChoice::Manual } };
     return names;
 }
 
 const NamedEnumTable< Config::SwapChoice >&
 Config::swapChoiceNames()
 {
-    // *INDENT-OFF*
-    // clang-format off
-    static const NamedEnumTable< SwapChoice > names {
-        { QStringLiteral( "none" ), SwapChoice::NoSwap },
-        { QStringLiteral( "small" ), SwapChoice::SmallSwap },
-        { QStringLiteral( "suspend" ), SwapChoice::FullSwap },
-        { QStringLiteral( "reuse" ), SwapChoice::ReuseSwap },
-        { QStringLiteral( "file" ), SwapChoice::SwapFile },
-    };
-    // clang-format on
-    // *INDENT-ON*
-
-    return names;
-}
-
-const NamedEnumTable< Config::LuksGeneration >&
-Config::luksGenerationNames()
-{
-    // *INDENT-OFF*
-    // clang-format off
-    static const NamedEnumTable< LuksGeneration > names {
-        { QStringLiteral( "luks1" ), LuksGeneration::Luks1 },
-        { QStringLiteral( "luks" ), LuksGeneration::Luks1 },
-        { QStringLiteral( "luks2" ), LuksGeneration::Luks2 },
-    };
-    // clang-format on
-    // *INDENT-ON*
+    static const NamedEnumTable< SwapChoice > names { { QStringLiteral( "none" ), SwapChoice::NoSwap },
+                                                      { QStringLiteral( "small" ), SwapChoice::SmallSwap },
+                                                      { QStringLiteral( "suspend" ), SwapChoice::FullSwap },
+                                                      { QStringLiteral( "reuse" ), SwapChoice::ReuseSwap },
+                                                      { QStringLiteral( "file" ), SwapChoice::SwapFile } };
 
     return names;
 }
@@ -94,6 +65,7 @@ pickOne( const Config::SwapChoiceSet& s )
     return *( s.begin() );
 }
 
+
 static Config::SwapChoiceSet
 getSwapChoices( const QVariantMap& configurationMap )
 {
@@ -111,13 +83,13 @@ getSwapChoices( const QVariantMap& configurationMap )
     {
         cWarning() << "Partition-module setting *ensureSuspendToDisk* is deprecated.";
     }
-    bool ensureSuspendToDisk = Calamares::getBool( configurationMap, "ensureSuspendToDisk", true );
+    bool ensureSuspendToDisk = CalamaresUtils::getBool( configurationMap, "ensureSuspendToDisk", true );
 
     if ( configurationMap.contains( "neverCreateSwap" ) )
     {
         cWarning() << "Partition-module setting *neverCreateSwap* is deprecated.";
     }
-    bool neverCreateSwap = Calamares::getBool( configurationMap, "neverCreateSwap", false );
+    bool neverCreateSwap = CalamaresUtils::getBool( configurationMap, "neverCreateSwap", false );
 
     Config::SwapChoiceSet choices;  // Available swap choices
     if ( configurationMap.contains( "userSwapChoices" ) )
@@ -241,22 +213,11 @@ Config::setSwapChoice( Config::SwapChoice c )
 void
 Config::setEraseFsTypeChoice( const QString& choice )
 {
-    const QString canonicalChoice = PartUtils::canonicalFilesystemName( choice, nullptr );
+    QString canonicalChoice = PartUtils::canonicalFilesystemName( choice, nullptr );
     if ( canonicalChoice != m_eraseFsTypeChoice )
     {
         m_eraseFsTypeChoice = canonicalChoice;
         Q_EMIT eraseModeFilesystemChanged( canonicalChoice );
-    }
-}
-
-void
-Config::setReplaceFilesystemChoice( const QString& filesystemName )
-{
-    const QString canonicalChoice = PartUtils::canonicalFilesystemName( filesystemName, nullptr );
-    if ( canonicalChoice != m_replaceFileSystemChoice )
-    {
-        m_replaceFileSystemChoice = canonicalChoice;
-        Q_EMIT replaceModeFilesystemChanged( canonicalChoice );
     }
 }
 
@@ -267,6 +228,7 @@ Config::acceptPartitionTableType( PartitionTable::TableType tableType ) const
         || m_requiredPartitionTableType.contains( PartitionTable::tableTypeToName( tableType ) );
 }
 
+
 static void
 fillGSConfigurationEFI( Calamares::GlobalStorage* gs, const QVariantMap& configurationMap )
 {
@@ -274,74 +236,39 @@ fillGSConfigurationEFI( Calamares::GlobalStorage* gs, const QVariantMap& configu
     QString firmwareType( PartUtils::isEfiSystem() ? QStringLiteral( "efi" ) : QStringLiteral( "bios" ) );
     gs->insert( "firmwareType", firmwareType );
 
-    bool ok = false;
-    auto efiConfiguration = Calamares::getSubMap( configurationMap, "efi", ok );
+    gs->insert( "efiSystemPartition",
+                CalamaresUtils::getString( configurationMap, "efiSystemPartition", QStringLiteral( "/boot/efi" ) ) );
 
-    // Mount Point
+    // Read and parse key efiSystemPartitionSize
+    if ( configurationMap.contains( "efiSystemPartitionSize" ) )
     {
-        const auto efiSystemPartition = Calamares::getString(
-            efiConfiguration,
-            "mountPoint",
-            Calamares::getString( configurationMap, "efiSystemPartition", QStringLiteral( "/boot/efi" ) ) );
-        // This specific GS key is also used by bootloader and grubcfg modules,
-        // as well as partition module internalls.
-        gs->insert( "efiSystemPartition", efiSystemPartition );
-    }
-
-    // Sizes
-    {
-        const auto efiRecommendedSize = Calamares::getString(
-            efiConfiguration, "recommendedSize", Calamares::getString( configurationMap, "efiSystemPartitionSize" ) );
-        if ( !efiRecommendedSize.isEmpty() )
+        const QString sizeString = CalamaresUtils::getString( configurationMap, "efiSystemPartitionSize" );
+        CalamaresUtils::Partition::PartitionSize part_size = CalamaresUtils::Partition::PartitionSize( sizeString );
+        if ( part_size.isValid() )
         {
-            Calamares::Partition::PartitionSize part_size = Calamares::Partition::PartitionSize( efiRecommendedSize );
-            if ( part_size.isValid() )
-            {
-                gs->insert( PartUtils::efiFilesystemRecommendedSizeGSKey(), part_size.toBytes() );
+            // Insert once as string, once as a size-in-bytes;
+            // changes to these keys should be synchronized with PartUtils.cpp
+            gs->insert( "efiSystemPartitionSize", sizeString );
+            gs->insert( "efiSystemPartitionSize_i", part_size.toBytes() );
 
-                // Assign long long int to long unsigned int to prevent compilation warning,
-                // checks for loss-of-precision in the conversion.
-                auto byte_part_size = part_size.toBytes();
-                if ( byte_part_size != PartUtils::efiFilesystemRecommendedSize() )
-                {
-                    cWarning() << "EFI partition size" << efiRecommendedSize << "has been adjusted to"
-                               << PartUtils::efiFilesystemRecommendedSize() << "bytes";
-                }
-            }
-            else
+            // Assign long long int to long unsigned int to prevent compilation warning
+            size_t unsigned_part_size = part_size.toBytes();
+            if ( unsigned_part_size != PartUtils::efiFilesystemMinimumSize() )
             {
-                cWarning() << "EFI partition size" << efiRecommendedSize << "is invalid, ignored";
+                cWarning() << "EFI partition size" << sizeString << "has been adjusted to"
+                           << PartUtils::efiFilesystemMinimumSize() << "bytes";
             }
         }
-
-        const auto efiMinimumSize = Calamares::getString( efiConfiguration, "minimumSize" );
-        if ( !efiMinimumSize.isEmpty() )
+        else
         {
-            Calamares::Partition::PartitionSize part_size = Calamares::Partition::PartitionSize( efiMinimumSize );
-            if ( part_size.isValid() )
-            {
-                if ( part_size.toBytes() > PartUtils::efiFilesystemRecommendedSize() )
-                {
-                    cWarning() << "EFI minimum size" << efiMinimumSize << "is larger than the recommended size"
-                               << efiRecommendedSize << ", ignored.";
-                }
-                else
-                {
-                    gs->insert( PartUtils::efiFilesystemMinimumSizeGSKey(), part_size.toBytes() );
-                }
-            }
+            cWarning() << "EFI partition size" << sizeString << "is invalid, ignored";
         }
     }
 
-    // Name (label) of partition
+    // Read and parse key efiSystemPartitionName
+    if ( configurationMap.contains( "efiSystemPartitionName" ) )
     {
-        const auto efiLabel = Calamares::getString(
-            efiConfiguration, "label", Calamares::getString( configurationMap, "efiSystemPartitionName" ) );
-
-        if ( !efiLabel.isEmpty() )
-        {
-            gs->insert( "efiSystemPartitionName", efiLabel );
-        }
+        gs->insert( "efiSystemPartitionName", CalamaresUtils::getString( configurationMap, "efiSystemPartitionName" ) );
     }
 }
 
@@ -350,9 +277,10 @@ Config::fillConfigurationFSTypes( const QVariantMap& configurationMap )
 {
     Calamares::GlobalStorage* gs = Calamares::JobQueue::instance()->globalStorage();
 
+
     // The defaultFileSystemType setting needs a bit more processing,
     // as we want to cover various cases (such as different cases)
-    QString fsName = Calamares::getString( configurationMap, "defaultFileSystemType" );
+    QString fsName = CalamaresUtils::getString( configurationMap, "defaultFileSystemType" );
     QString fsRealName;
     FileSystem::Type fsType = FileSystem::Type::Unknown;
     if ( fsName.isEmpty() )
@@ -379,7 +307,7 @@ Config::fillConfigurationFSTypes( const QVariantMap& configurationMap )
     gs->insert( "defaultFileSystemType", fsRealName );
 
     // TODO: canonicalize the names? How is translation supposed to work?
-    m_eraseFsTypes = Calamares::getStringList( configurationMap, "availableFileSystemTypes" );
+    m_eraseFsTypes = CalamaresUtils::getStringList( configurationMap, "availableFileSystemTypes" );
     if ( !m_eraseFsTypes.contains( fsRealName ) )
     {
         if ( !m_eraseFsTypes.isEmpty() )
@@ -395,40 +323,27 @@ Config::fillConfigurationFSTypes( const QVariantMap& configurationMap )
         }
     }
 
-    // Set LUKS file system based on luksGeneration provided, defaults to 'luks'.
-    bool nameFound = false;
-    Config::LuksGeneration luksGeneration
-        = luksGenerationNames().find( Calamares::getString( configurationMap, "luksGeneration" ), nameFound );
-    if ( !nameFound )
-    {
-        cWarning() << "Partition-module setting *luksGeneration* not found or invalid. Defaulting to luks1.";
-        luksGeneration = Config::LuksGeneration::Luks1;
-    }
-    m_luksFileSystemType = luksGeneration;
-    gs->insert( "luksFileSystemType", luksGenerationNames().find( luksGeneration ) );
-
     Q_ASSERT( !m_eraseFsTypes.isEmpty() );
     Q_ASSERT( m_eraseFsTypes.contains( fsRealName ) );
     m_eraseFsTypeChoice = fsRealName;
-    m_replaceFileSystemChoice = fsRealName;
     Q_EMIT eraseModeFilesystemChanged( m_eraseFsTypeChoice );
-    Q_EMIT replaceModeFilesystemChanged( m_replaceFileSystemChoice );
 }
+
 
 void
 Config::setConfigurationMap( const QVariantMap& configurationMap )
 {
     // Settings that overlap with the Welcome module
-    m_requiredStorageGiB = Calamares::getDouble( configurationMap, "requiredStorage", -1.0 );
+    m_requiredStorageGiB = CalamaresUtils::getDouble( configurationMap, "requiredStorage", -1.0 );
     m_swapChoices = getSwapChoices( configurationMap );
 
     bool nameFound = false;  // In the name table (ignored, falls back to first entry in table)
-    m_initialInstallChoice
-        = installChoiceNames().find( Calamares::getString( configurationMap, "initialPartitioningChoice" ), nameFound );
+    m_initialInstallChoice = installChoiceNames().find(
+        CalamaresUtils::getString( configurationMap, "initialPartitioningChoice" ), nameFound );
     setInstallChoice( m_initialInstallChoice );
 
     m_initialSwapChoice
-        = swapChoiceNames().find( Calamares::getString( configurationMap, "initialSwapChoice" ), nameFound );
+        = swapChoiceNames().find( CalamaresUtils::getString( configurationMap, "initialSwapChoice" ), nameFound );
     if ( !m_swapChoices.contains( m_initialSwapChoice ) )
     {
         cWarning() << "Configuration for *initialSwapChoice* is not one of the *userSwapChoices*";
@@ -441,14 +356,10 @@ Config::setConfigurationMap( const QVariantMap& configurationMap )
     }
     setSwapChoice( m_initialSwapChoice );
 
-    m_allowZfsEncryption = Calamares::getBool( configurationMap, "allowZfsEncryption", true );
-
-    m_allowManualPartitioning = Calamares::getBool( configurationMap, "allowManualPartitioning", true );
-    m_showNotEncryptedBootMessage = Calamares::getBool( configurationMap, "showNotEncryptedBootMessage", true );
-    m_requiredPartitionTableType = Calamares::getStringList( configurationMap, "requiredPartitionTableType" );
+    m_allowManualPartitioning = CalamaresUtils::getBool( configurationMap, "allowManualPartitioning", true );
+    m_requiredPartitionTableType = CalamaresUtils::getStringList( configurationMap, "requiredPartitionTableType" );
 
     Calamares::GlobalStorage* gs = Calamares::JobQueue::instance()->globalStorage();
-    gs->insert( "armInstall", Calamares::getBool( configurationMap, "armInstall", false ) );
     fillGSConfigurationEFI( gs, configurationMap );
     fillConfigurationFSTypes( configurationMap );
 }

@@ -22,6 +22,7 @@ KeyboardViewStep::KeyboardViewStep( QObject* parent )
     , m_config( new Config( this ) )
     , m_widget( new KeyboardPage( m_config ) )
 {
+    m_config->detectCurrentKeyboardLayout();
     emit nextStatusChanged( true );
 }
 
@@ -38,7 +39,7 @@ KeyboardViewStep::~KeyboardViewStep()
 QString
 KeyboardViewStep::prettyName() const
 {
-    return tr( "Keyboard", "@label" );
+    return tr( "Keyboard" );
 }
 
 
@@ -109,5 +110,4 @@ void
 KeyboardViewStep::setConfigurationMap( const QVariantMap& configurationMap )
 {
     m_config->setConfigurationMap( configurationMap );
-    m_config->detectCurrentKeyboardLayout();
 }

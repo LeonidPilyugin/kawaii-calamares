@@ -12,7 +12,7 @@ import io.calamares.ui 1.0
 
 import QtQuick 2.15
 import QtQuick.Controls 2.15
-import QtQuick.Window 2.15
+import QtQuick.Window 2.14
 import QtQuick.Layouts 1.3
 
 import org.kde.kirigami 2.7 as Kirigami
@@ -52,255 +52,209 @@ Item {
     Rectangle {
         id: backgroundItem
         anchors.fill: parent
-        width: 800
         color: backgroundColor
 
         Label {
             id: header
             anchors.horizontalCenter: parent.horizontalCenter
-            text: qsTr("Select a layout to activate keyboard preview", "@label")
+            text: qsTr("To activate keyboard preview, select a layout.")
             color: textColor
             font.bold: true
         }
 
-        Drawer {
-            id: drawer
-            width: 0.4 * backgroundItem.width
-            height: backgroundItem.height
-            edge: Qt.RightEdge
-
-            ScrollView {
-                id: scroll1
-                anchors.fill: parent
-                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-
-                ListView {
-                    id: models
-                    focus: true
-                    clip: true
-                    boundsBehavior: Flickable.StopAtBounds
-                    width: parent.width
-
-                    model: config.keyboardModelsModel
-                    Component.onCompleted: positionViewAtIndex(model.currentIndex, ListView.Center)
-                    currentIndex: model.currentIndex
-                    delegate: ItemDelegate {
-
-                        property variant currentModel: model
-                        hoverEnabled: true
-                        width: 0.4 * backgroundItem.width
-                        implicitHeight: 24
-                        highlighted: ListView.isCurrentItem
-                        Label {
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                            horizontalAlignment: Text.AlignHCenter
-                            width: parent.width
-                            height: 24
-                            color: highlighted ? "#eff0f1" : "#1F1F1F"
-                            text: model.label
-                            background: Rectangle {
-
-                                color: highlighted || hovered ? "#3498DB" : "#ffffff"
-                                opacity: highlighted || hovered ? 0.5 : 0.9
-                            }
-
-                            MouseArea {
-                                hoverEnabled: true
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    models.currentIndex = index
-                                    drawer.close()
-                                }
-                            }
-                        }
-                    }
-                    onCurrentItemChanged: { config.keyboardModels = model[currentIndex] } /* This works because model is a stringlist */
-                }
-            }
-        }
-
-        Rectangle {
-            id: modelLabel
-            anchors.top: header.bottom
-            anchors.topMargin: 10
+        Label {
+            id: intro
             anchors.horizontalCenter: parent.horizontalCenter
-            width: parent.width / 1.5
-            height: 36
-            color: mouseBar.containsMouse ? "#eff0f1" : "transparent";
-
-            MouseArea {
-                id: mouseBar
-                anchors.fill: parent;
-                cursorShape: Qt.PointingHandCursor
-                hoverEnabled: true
-
-                onClicked: {
-                    drawer.open()
-                }
-                Text {
-                    anchors.centerIn: parent
-                    text: qsTr("<b>Keyboard model:&nbsp;&nbsp;</b>", "@label") + models.currentItem.currentModel.label
-                    color: textColor
-                }
-                Image {
-                    source: "data/pan-end-symbolic.svg"
-                    anchors.centerIn: parent
-                    anchors.horizontalCenterOffset : parent.width / 2.5
-                    fillMode: Image.PreserveAspectFit
-                    height: 22
-                }
-            }
+            anchors.top: header.bottom
+            color: textColor
+            horizontalAlignment: Text.AlignHCenter
+            width: parent.width / 1.2
+            wrapMode: Text.WordWrap
+            text: ( config.prettyStatus)
         }
 
         RowLayout {
-            id: stack
-            anchors.top: modelLabel.bottom
+            id: models
+            anchors.top: intro.bottom
             anchors.topMargin: 10
             anchors.horizontalCenter: parent.horizontalCenter
-            width: parent.width / 1.1
+            width: parent.width /1.5
             spacing: 10
 
-            ListView {
-                id: layouts
+            Label {
+                Layout.alignment: Qt.AlignCenter
+                text: qsTr("Keyboard Model:")
+                color: textColor
+                font.bold: true
+            }
 
-                ScrollBar.vertical: ScrollBar {
-                    active: true
-                }
-
-                Layout.preferredWidth: parent.width / 2
-                height: 220
-                focus: true
-                clip: true
-                boundsBehavior: Flickable.StopAtBounds
-                spacing: 2
-                headerPositioning: ListView.OverlayHeader
-                header: Rectangle{
-                    height: 24
-                    width: parent.width
-                    z: 2
-                    color:backgroundColor
-                    Text {
-                        text: qsTr("Layout", "@label")
-                        anchors.centerIn: parent
-                        color: textColor
-                        font.bold: true
-                    }
-                }
-
-                Rectangle {
-                    z: parent.z - 1
-                    anchors.fill: parent
-                    color: listBackgroundColor
-                    opacity: 0.7
-                }
-
-                model: config.keyboardLayoutsModel
+            ComboBox {
+                Layout.fillWidth: true
+                textRole: "label"
+                model: config.keyboardModelsModel
                 currentIndex: model.currentIndex
-                Component.onCompleted: positionViewAtIndex(model.currentIndex, ListView.Center)
-                delegate: ItemDelegate {
+                onCurrentIndexChanged: config.keyboardModels = currentIndex
+            }
+        }
 
-                    hoverEnabled: true
-                    width: parent.width
-                    implicitHeight: 24
-                    highlighted: ListView.isCurrentItem
+        StackView {
+            id: stack
+            anchors.top: models.bottom
+            anchors.topMargin: 10
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            clip: true
 
-                    RowLayout {
+            initialItem: Item {
+
+                ListView {
+                    id: layouts
+
+                    ScrollBar.vertical: ScrollBar {
+                        active: true
+                    }
+
+                    width: parent.width / 2
+                    height: 200
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    focus: true
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
+                    spacing: 2
+
+                    Rectangle {
+                        z: parent.z - 1
                         anchors.fill: parent
+                        color: listBackgroundColor
+                        opacity: 0.7
+                    }
 
-                        Label {
-                            id: label1
-                            text: model.label
-                            horizontalAlignment: Text.AlignHCenter
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
-                            width: parent.width
-                            height: 24
-                            color: highlighted ? highlightedTextColor : textColor
+                    model: config.keyboardLayoutsModel
+                    currentIndex: model.currentIndex
+                    Component.onCompleted: positionViewAtIndex(model.currentIndex, ListView.Center)
+                    delegate: ItemDelegate {
 
-                            background: Rectangle {
-                                color: highlighted || hovered ? highlightColor : listBackgroundColor
-                                opacity: highlighted || hovered ? 0.5 : 0.3
+                        hoverEnabled: true
+                        width: parent.width
+                        height: 18
+                        highlighted: ListView.isCurrentItem
+
+                        RowLayout {
+                            anchors.fill: parent
+
+                            Label {
+                                id: label1
+                                text: model.label
+                                Layout.fillHeight: true
+                                Layout.fillWidth: true
+                                padding: 10
+                                width: parent.width
+                                height: 32
+                                color: highlighted ? highlightedTextColor : textColor
+
+                                background: Rectangle {
+                                    color: highlighted || hovered ? highlightColor : listBackgroundColor
+                                    opacity: highlighted || hovered ? 0.5 : 0.3
+                                }
                             }
                         }
-                    }
 
-                    onClicked: {
+                        onClicked: {
 
-                        layouts.model.currentIndex = index
-                        keyIndex = label1.text.substring(0,6)
-                        layouts.positionViewAtIndex(index, ListView.Center)
+                            layouts.model.currentIndex = index
+                            keyIndex = label1.text.substring(0,6)
+                            stack.push(variantsList)
+                            layouts.positionViewAtIndex(index, ListView.Center)
+                        }
                     }
+                }
+                Button {
+
+                    Layout.fillWidth: true
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.verticalCenterOffset: -parent.height / 3.5
+                    anchors.left: parent.left
+                    anchors.leftMargin: parent.width / 15
+                    icon.name: "go-next"
+                    text: qsTr("Variants")
+                    onClicked: stack.push(variantsList)
                 }
             }
 
-            ListView {
-                id: variants
+            Component {
+                id: variantsList
 
-                ScrollBar.vertical: ScrollBar {
-                    active: true
-                }
+                Item {
 
-                Layout.preferredWidth: parent.width / 2
-                height: 220
-                focus: true
-                clip: true
-                boundsBehavior: Flickable.StopAtBounds
-                spacing: 2
-                headerPositioning: ListView.OverlayHeader
-                header: Rectangle{
-                    height: 24
-                    width: parent.width
-                    z: 2
-                    color:backgroundColor
-                    Text {
-                        text: qsTr("Variant", "@label")
-                        anchors.centerIn: parent
-                        color: textColor
-                        font.bold: true
-                    }
-                }
+                    ListView {
+                        id: variants
 
-                Rectangle {
-                    z: parent.z - 1
-                    anchors.fill: parent
-                    color: listBackgroundColor
-                    opacity: 0.7
-                }
+                        ScrollBar.vertical: ScrollBar {
+                            active: true
+                        }
 
-                model: config.keyboardVariantsModel
-                currentIndex: model.currentIndex
-                Component.onCompleted: positionViewAtIndex(model.currentIndex, ListView.Center)
+                        width: parent.width / 2
+                        height: 200
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.topMargin: 10
+                        focus: true
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+                        spacing: 2
 
-                delegate: ItemDelegate {
-                    hoverEnabled: true
-                    width: parent.width
-                    implicitHeight: 24
-                    highlighted: ListView.isCurrentItem
+                        Rectangle {
+                            z: parent.z - 1
+                            anchors.fill: parent
+                            color: listBackgroundColor
+                            opacity: 0.7
+                        }
 
-                    RowLayout {
-                    anchors.fill: parent
+                        model: config.keyboardVariantsModel
+                        currentIndex: model.currentIndex
+                        Component.onCompleted: positionViewAtIndex(model.currentIndex, ListView.Center)
 
-                        Label {
-                            text: model.label
-                            horizontalAlignment: Text.AlignHCenter
-                            Layout.fillHeight: true
-                            Layout.fillWidth: true
+                        delegate: ItemDelegate {
+                            hoverEnabled: true
                             width: parent.width
-                            height: 24
-                            color: highlighted ? highlightedTextColor : textColor
+                            height: 18
+                            highlighted: ListView.isCurrentItem
 
-                            background: Rectangle {
-                                color: highlighted || hovered ? highlightColor : listBackgroundColor
-                                opacity: highlighted || hovered ? 0.5 : 0.3
+                            RowLayout {
+                            anchors.fill: parent
+
+                                Label {
+                                    text: model.label
+                                    Layout.fillHeight: true
+                                    Layout.fillWidth: true
+                                    padding: 10
+                                    width: parent.width
+                                    height: 30
+                                    color: highlighted ? highlightedTextColor : textColor
+
+                                    background: Rectangle {
+                                        color: highlighted || hovered ? highlightColor : listBackgroundColor
+                                        opacity: highlighted || hovered ? 0.5 : 0.3
+                                    }
+                                }
+                            }
+
+                            onClicked: {
+                                variants.model.currentIndex = index
+                                variants.positionViewAtIndex(index, ListView.Center)
                             }
                         }
                     }
 
-                    onClicked: {
-                        variants.model.currentIndex = index
-                        variants.positionViewAtIndex(index, ListView.Center)
+                    Button {
+                        Layout.fillWidth: true
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.verticalCenterOffset: -parent.height / 3.5
+                        anchors.left: parent.left
+                        anchors.leftMargin: parent.width / 15
+                        icon.name: "go-previous"
+                        text: qsTr("Layouts")
+                        onClicked: stack.pop()
                     }
                 }
             }
@@ -308,9 +262,9 @@ Item {
 
         TextField {
             id: textInput
-            placeholderText: qsTr("Type here to test your keyboard…", "@label")
+            placeholderText: qsTr("Type here to test your keyboard")
             height: 36
-            width: parent.width / 1.6
+            width: parent.width / 1.5
             horizontalAlignment: TextInput.AlignHCenter
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: keyboard.top

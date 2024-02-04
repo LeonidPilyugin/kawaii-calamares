@@ -29,7 +29,7 @@ LocaleQmlViewStep::getConfig()
 QString
 LocaleQmlViewStep::prettyName() const
 {
-    return tr( "Location", "@label" );
+    return tr( "Location" );
 }
 
 QString

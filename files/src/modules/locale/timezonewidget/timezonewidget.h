@@ -43,9 +43,9 @@ class TimeZoneWidget : public QWidget
 {
     Q_OBJECT
 public:
-    using TimeZoneData = Calamares::Locale::TimeZoneData;
+    using TimeZoneData = CalamaresUtils::Locale::TimeZoneData;
 
-    explicit TimeZoneWidget( const Calamares::Locale::ZonesModel* zones, QWidget* parent = nullptr );
+    explicit TimeZoneWidget( const CalamaresUtils::Locale::ZonesModel* zones, QWidget* parent = nullptr );
 
 public Q_SLOTS:
     /** @brief Sets a location by pointer
@@ -63,7 +63,7 @@ private:
     QImage background, pin, currentZoneImage;
     TimeZoneImageList timeZoneImages;
 
-    const Calamares::Locale::ZonesModel* m_zonesData;
+    const CalamaresUtils::Locale::ZonesModel* m_zonesData;
     const TimeZoneData* m_currentLocation = nullptr;  // Not owned by me
 
     void paintEvent( QPaintEvent* event ) override;

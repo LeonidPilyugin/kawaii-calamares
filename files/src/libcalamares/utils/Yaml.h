@@ -48,11 +48,9 @@ class QFileInfo;
 #endif
 
 /// @brief Appends all the elements of @p node to the string list @p v
-void operator>>( const ::YAML::Node& node, QStringList& v );
+void operator>>( const YAML::Node& node, QStringList& v );
 
-namespace Calamares
-{
-namespace YAML
+namespace CalamaresUtils
 {
 /**
  * Loads a given @p filename and returns the YAML data
@@ -60,31 +58,30 @@ namespace YAML
  * malformed in some way, returns an empty map and sets
  * @p *ok to false. Otherwise sets @p *ok to true.
  */
-QVariantMap load( const QString& filename, bool* ok = nullptr );
+QVariantMap loadYaml( const QString& filename, bool* ok = nullptr );
 /** Convenience overload. */
-QVariantMap load( const QFileInfo&, bool* ok = nullptr );
+QVariantMap loadYaml( const QFileInfo&, bool* ok = nullptr );
 
-QVariant toVariant( const ::YAML::Node& node );
-QVariant scalarToVariant( const ::YAML::Node& scalarNode );
-QVariantList sequenceToVariant( const ::YAML::Node& sequenceNode );
-QVariantMap mapToVariant( const ::YAML::Node& mapNode );
+QVariant yamlToVariant( const YAML::Node& node );
+QVariant yamlScalarToVariant( const YAML::Node& scalarNode );
+QVariantList yamlSequenceToVariant( const YAML::Node& sequenceNode );
+QVariantMap yamlMapToVariant( const YAML::Node& mapNode );
 
 /// @brief Returns all the elements of @p listNode in a StringList
-QStringList toStringList( const ::YAML::Node& listNode );
+QStringList yamlToStringList( const YAML::Node& listNode );
 
 /// @brief Save a @p map to @p filename as YAML
-bool save( const QString& filename, const QVariantMap& map );
+bool saveYaml( const QString& filename, const QVariantMap& map );
 
 /**
  * Given an exception from the YAML parser library, explain
  * what is going on in terms of the data passed to the parser.
  * Uses @p label when labeling the data source (e.g. "netinstall data")
  */
-void explainException( const ::YAML::Exception& e, const QByteArray& data, const char* label );
-void explainException( const ::YAML::Exception& e, const QByteArray& data, const QString& label );
-void explainException( const ::YAML::Exception& e, const QByteArray& data );
+void explainYamlException( const YAML::Exception& e, const QByteArray& data, const char* label );
+void explainYamlException( const YAML::Exception& e, const QByteArray& data, const QString& label );
+void explainYamlException( const YAML::Exception& e, const QByteArray& data );
 
-}  // namespace YAML
-}  // namespace Calamares
+}  // namespace CalamaresUtils
 
 #endif

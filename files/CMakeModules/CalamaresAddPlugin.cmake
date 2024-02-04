@@ -19,7 +19,7 @@
 #
 # calamares_add_plugin(
 #   module-name
-#   TYPE <viewmodule|job>
+#   TYPE <view|job>
 #   EXPORT_MACRO macro-name
 #   SOURCES source-file...
 #   UI ui-file...
@@ -35,7 +35,7 @@
 #   [WEIGHT w]
 # )
 #
-# Function optional parameters:
+# Function parameters:
 #  - COMPILE_DEFINITIONS
 #       Definitions are set on the resulting module with a suitable
 #       flag (i.e. `-D`) so only state the name (optionally, also the value)
@@ -65,9 +65,6 @@
 # SKIPPED_MODULES is set in the parent (i.e. caller's) scope with the
 # reason why. This should rarely be a concern as AddModuleSubdirectory
 # already handles skip-reasons and collects them for reporting.
-#
-# The target defined this way is called "calamares_<TYPE>_<module-name>",
-# e.g. "calamares_viewmodule_packagechooserq".
 
 include( CMakeParseArguments )
 
@@ -107,9 +104,10 @@ function( calamares_add_plugin )
             message( FATAL_ERROR "${Red}NO_CONFIG${ColorReset} is set, with configuration ${Red}${PLUGIN_CONFIG_FILES}${ColorReset}" )
         endif()
         set( _destination "(unknown)" )
-        if(INSTALL_CONFIG AND NOT PLUGIN_NO_INSTALL)
-            set(_destination "${PLUGIN_DATA_DESTINATION}")
+        if ( INSTALL_CONFIG AND NOT PLUGIN_NO_INSTALL )
+            set( _destination "${PLUGIN_DATA_DESTINATION}" )
         elseif( NOT PLUGIN_NO_INSTALL )
+            # Not INSTALL_CONFIG
             set( _destination "[Build directory only]" )
         else()
             set( _destination "[Skipping installation]" )
@@ -129,7 +127,7 @@ function( calamares_add_plugin )
     set( target "calamares_${PLUGIN_TYPE}_${PLUGIN_NAME}" )
 
     # automatic library linkage
-    if(PLUGIN_TYPE STREQUAL "viewmodule")
+    if(PLUGIN_TYPE STREQUAL "view" OR PLUGIN_TYPE STREQUAL "viewmodule")
         list(APPEND PLUGIN_LINK_PRIVATE_LIBRARIES Calamares::calamaresui)
     elseif(PLUGIN_TYPE STREQUAL "job")
         list(APPEND PLUGIN_LINK_PRIVATE_LIBRARIES Calamares::calamares)
@@ -212,14 +210,16 @@ function( calamares_add_plugin )
 
         set( _warned_config OFF )
         foreach( PLUGIN_CONFIG_FILE ${PLUGIN_CONFIG_FILES} )
-            if( ${CMAKE_CURRENT_SOURCE_DIR}/${PLUGIN_CONFIG_FILE} IS_NEWER_THAN ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_CONFIG_FILE} )
+            if( ${CMAKE_CURRENT_SOURCE_DIR}/${PLUGIN_CONFIG_FILE} IS_NEWER_THAN ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_CONFIG_FILE} OR INSTALL_CONFIG )
                 configure_file( ${PLUGIN_CONFIG_FILE} ${PLUGIN_CONFIG_FILE} COPYONLY )
             else()
                 message( "   ${BoldYellow}Not updating${ColorReset} ${PLUGIN_CONFIG_FILE}" )
                 set( _warned_config ON )
             endif()
-            if(INSTALL_CONFIG)
-                install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_CONFIG_FILE} DESTINATION ${PLUGIN_DATA_DESTINATION})
+            if ( INSTALL_CONFIG )
+                install(
+                    FILES ${CMAKE_CURRENT_BINARY_DIR}/${PLUGIN_CONFIG_FILE}
+                    DESTINATION ${PLUGIN_DATA_DESTINATION} )
             endif()
         endforeach()
         if ( _warned_config )

@@ -16,16 +16,16 @@
 
 #include "GlobalStorage.h"
 #include "JobQueue.h"
-#include "compat/Variant.h"
 #include "utils/Logger.h"
 #include "utils/String.h"
-#include "utils/StringExpander.h"
 #include "utils/Variant.h"
+
+#include <KMacroExpander>
 
 #include <QCoreApplication>
 #include <QFile>
 #include <QMetaProperty>
-#include <QRegularExpression>
+#include <QRegExp>
 #include <QTimer>
 
 #ifdef HAVE_ICU
@@ -42,10 +42,10 @@ static const char TRANSLITERATOR_ID[] = "Russian-Latin/BGN;"
 
 #include <memory>
 
-static const QRegularExpression USERNAME_RX( "^[a-z_][a-z0-9_-]*[$]?$" );  // Note anchors begin and end
+static const QRegExp USERNAME_RX( "^[a-z_][a-z0-9_-]*[$]?$" );
 static constexpr const int USERNAME_MAX_LENGTH = 31;
 
-static const QRegularExpression HOSTNAME_RX( "^[a-zA-Z0-9][-a-zA-Z0-9_]*$" );  // Note anchors begin and end
+static const QRegExp HOSTNAME_RX( "^[a-zA-Z0-9][-a-zA-Z0-9_]*$" );
 static constexpr const int HOSTNAME_MIN_LENGTH = 2;
 static constexpr const int HOSTNAME_MAX_LENGTH = 63;
 
@@ -201,6 +201,7 @@ Config::setSudoersGroup( const QString& group )
     }
 }
 
+
 void
 Config::setLoginName( const QString& login )
 {
@@ -235,12 +236,12 @@ Config::loginNameStatus() const
         return tr( "Your username is too long." );
     }
 
-    QRegularExpression validateFirstLetter( "^[a-z_]" );
-    if ( m_loginName.indexOf( validateFirstLetter ) != 0 )
+    QRegExp validateFirstLetter( "^[a-z_]" );
+    if ( validateFirstLetter.indexIn( m_loginName ) != 0 )
     {
         return tr( "Your username must start with a lowercase letter or underscore." );
     }
-    if ( m_loginName.indexOf( USERNAME_RX ) != 0 )
+    if ( !USERNAME_RX.exactMatch( m_loginName ) )
     {
         return tr( "Only lowercase letters, numbers, underscore and hyphen are allowed." );
     }
@@ -310,7 +311,7 @@ Config::hostnameStatus() const
         return tr( "'%1' is not allowed as hostname." ).arg( m_hostname );
     }
 
-    if ( m_hostname.indexOf( HOSTNAME_RX ) != 0 )
+    if ( !HOSTNAME_RX.exactMatch( m_hostname ) )
     {
         return tr( "Only letters, numbers, underscore and hyphen are allowed." );
     }
@@ -321,7 +322,7 @@ Config::hostnameStatus() const
 static QString
 cleanupForHostname( const QString& s )
 {
-    QRegularExpression dmirx( "(^Apple|\\(.*\\)|[^a-zA-Z0-9])", QRegularExpression::CaseInsensitiveOption );
+    QRegExp dmirx( "[^a-zA-Z0-9]", Qt::CaseInsensitive );
     return s.toLower().replace( dmirx, " " ).remove( ' ' );
 }
 
@@ -339,30 +340,15 @@ guessProductName()
     if ( !tried )
     {
         QFile dmiFile( QStringLiteral( "/sys/devices/virtual/dmi/id/product_name" ) );
-        QFile modelFile( QStringLiteral( "/proc/device-tree/model" ) );
 
         if ( dmiFile.exists() && dmiFile.open( QIODevice::ReadOnly ) )
         {
             dmiProduct = cleanupForHostname( QString::fromLocal8Bit( dmiFile.readAll().simplified().data() ) );
-            if ( !dmiProduct.isEmpty() )
-            {
-                tried = true;
-                return dmiProduct;
-            }
         }
-
-        if ( modelFile.exists() && modelFile.open( QIODevice::ReadOnly ) )
+        if ( dmiProduct.isEmpty() )
         {
-            dmiProduct
-                = cleanupForHostname( QString::fromLocal8Bit( modelFile.readAll().chopped( 1 ).simplified().data() ) );
-            if ( !dmiProduct.isEmpty() )
-            {
-                tried = true;
-                return dmiProduct;
-            }
+            dmiProduct = QStringLiteral( "pc" );
         }
-
-        dmiProduct = QStringLiteral( "pc" );
         tried = true;
     }
     return dmiProduct;
@@ -412,7 +398,7 @@ makeLoginNameSuggestion( const QStringList& parts )
         }
     }
 
-    return usernameSuggestion.indexOf( USERNAME_RX ) != -1 ? usernameSuggestion : QString();
+    return USERNAME_RX.indexIn( usernameSuggestion ) != -1 ? usernameSuggestion : QString();
 }
 
 /** @brief Return an invalid string for use in a hostname, if @p s is empty
@@ -429,24 +415,24 @@ invalidEmpty( const QString& s )
 STATICTEST QString
 makeHostnameSuggestion( const QString& templateString, const QStringList& fullNameParts, const QString& loginName )
 {
-    Calamares::String::DictionaryExpander d;
+    QHash< QString, QString > replace;
     // User data
-    d.add( QStringLiteral( "first" ),
-           invalidEmpty( fullNameParts.isEmpty() ? QString() : cleanupForHostname( fullNameParts.first() ) ) )
-        .add( QStringLiteral( "name" ), invalidEmpty( cleanupForHostname( fullNameParts.join( QString() ) ) ) )
-        .add( QStringLiteral( "login" ), invalidEmpty( cleanupForHostname( loginName ) ) )
-        // Hardware data
-        .add( QStringLiteral( "product" ), guessProductName() )
-        .add( QStringLiteral( "product2" ), cleanupForHostname( QSysInfo::prettyProductName() ) )
-        .add( QStringLiteral( "cpu" ), cleanupForHostname( QSysInfo::currentCpuArchitecture() ) )
-        // Hostname data
-        .add( QStringLiteral( "host" ), invalidEmpty( cleanupForHostname( QSysInfo::machineHostName() ) ) );
+    replace.insert( QStringLiteral( "first" ),
+                    invalidEmpty( fullNameParts.isEmpty() ? QString() : cleanupForHostname( fullNameParts.first() ) ) );
+    replace.insert( QStringLiteral( "name" ), invalidEmpty( cleanupForHostname( fullNameParts.join( QString() ) ) ) );
+    replace.insert( QStringLiteral( "login" ), invalidEmpty( cleanupForHostname( loginName ) ) );
+    // Hardware data
+    replace.insert( QStringLiteral( "product" ), guessProductName() );
+    replace.insert( QStringLiteral( "product2" ), cleanupForHostname( QSysInfo::prettyProductName() ) );
+    replace.insert( QStringLiteral( "cpu" ), cleanupForHostname( QSysInfo::currentCpuArchitecture() ) );
+    // Hostname data
+    replace.insert( QStringLiteral( "host" ), invalidEmpty( cleanupForHostname( QSysInfo::machineHostName() ) ) );
 
-    QString hostnameSuggestion = d.expand( templateString );
+    QString hostnameSuggestion = KMacroExpander::expandMacros( templateString, replace, '$' );
 
     // RegExp for valid hostnames; if the suggestion produces a valid name, return it
-    static const QRegularExpression HOSTNAME_RX( "^[a-zA-Z0-9][-a-zA-Z0-9_]*$" );
-    return hostnameSuggestion.indexOf( HOSTNAME_RX ) != -1 ? hostnameSuggestion : QString();
+    static const QRegExp HOSTNAME_RX( "^[a-zA-Z0-9][-a-zA-Z0-9_]*$" );
+    return HOSTNAME_RX.indexIn( hostnameSuggestion ) != -1 ? hostnameSuggestion : QString();
 }
 
 void
@@ -483,13 +469,14 @@ Config::setFullName( const QString& name )
         emit fullNameChanged( name );
 
         // Build login and hostname, if needed
-        static QRegularExpression rx( "[^a-zA-Z0-9 ]" );
+        static QRegExp rx( "[^a-zA-Z0-9 ]", Qt::CaseInsensitive );
 
-        const QString cleanName = Calamares::String::removeDiacritics( transliterate( name ) )
-                                      .replace( QRegularExpression( "[-']" ), "" )
+        const QString cleanName = CalamaresUtils::removeDiacritics( transliterate( name ) )
+                                      .replace( QRegExp( "[-']" ), "" )
                                       .replace( rx, " " )
                                       .toLower()
                                       .simplified();
+
 
         QStringList cleanParts = cleanName.split( ' ' );
 
@@ -612,6 +599,7 @@ Config::passwordStatus( const QString& pw1, const QString& pw2 ) const
     return qMakePair( PasswordValidity::Valid, tr( "OK!" ) );
 }
 
+
 Config::PasswordStatus
 Config::userPasswordStatus() const
 {
@@ -631,6 +619,7 @@ Config::userPasswordMessage() const
     auto p = userPasswordStatus();
     return p.second;
 }
+
 
 void
 Config::setRootPassword( const QString& s )
@@ -738,6 +727,7 @@ Config::checkReady()
     }
 }
 
+
 STATICTEST void
 setConfigurationDefaultGroups( const QVariantMap& map, QList< GroupDescription >& defaultGroups )
 {
@@ -747,7 +737,7 @@ setConfigurationDefaultGroups( const QVariantMap& map, QList< GroupDescription >
     auto groupsFromConfig = map.value( key ).toList();
     if ( groupsFromConfig.isEmpty() )
     {
-        if ( map.contains( key ) && map.value( key ).isValid() && map.value( key ).canConvert< QVariantList >() )
+        if ( map.contains( key ) && map.value( key ).isValid() && map.value( key ).canConvert( QVariant::List ) )
         {
             // Explicitly set, but empty: this is valid, but unusual.
             cDebug() << key << "has explicit empty value.";
@@ -768,19 +758,19 @@ setConfigurationDefaultGroups( const QVariantMap& map, QList< GroupDescription >
     {
         for ( const auto& v : groupsFromConfig )
         {
-            if ( Calamares::typeOf( v ) == Calamares::StringVariantType )
+            if ( v.type() == QVariant::String )
             {
                 defaultGroups.append( GroupDescription( v.toString() ) );
             }
-            else if ( Calamares::typeOf( v ) == Calamares::MapVariantType )
+            else if ( v.type() == QVariant::Map )
             {
                 const auto innermap = v.toMap();
-                QString name = Calamares::getString( innermap, "name" );
+                QString name = CalamaresUtils::getString( innermap, "name" );
                 if ( !name.isEmpty() )
                 {
                     defaultGroups.append( GroupDescription( name,
-                                                            Calamares::getBool( innermap, "must_exist", false ),
-                                                            Calamares::getBool( innermap, "system", false ) ) );
+                                                            CalamaresUtils::getBool( innermap, "must_exist", false ),
+                                                            CalamaresUtils::getBool( innermap, "system", false ) ) );
                 }
                 else
                 {
@@ -799,7 +789,7 @@ STATICTEST HostNameAction
 getHostNameAction( const QVariantMap& configurationMap )
 {
     HostNameAction setHostName = HostNameAction::EtcHostname;
-    QString hostnameActionString = Calamares::getString( configurationMap, "location" );
+    QString hostnameActionString = CalamaresUtils::getString( configurationMap, "location" );
     if ( !hostnameActionString.isEmpty() )
     {
         bool ok = false;
@@ -834,8 +824,18 @@ addPasswordCheck( const QString& key, const QVariant& value, PasswordCheckList& 
     }
     else if ( key == "nonempty" )
     {
-        cWarning() << "nonempty check is ignored; use minLength: 1";
-        return false;
+        if ( value.toBool() )
+        {
+            passwordChecks.push_back(
+                PasswordCheck( []() { return QCoreApplication::translate( "PWQ", "Password is empty" ); },
+                               []( const QString& s ) { return !s.isEmpty(); },
+                               PasswordCheck::Weight( 1 ) ) );
+        }
+        else
+        {
+            cDebug() << "nonempty check is mentioned but set to false";
+            return false;
+        }
     }
 #ifdef CHECK_PWQUALITY
     else if ( key == "libpwquality" )
@@ -874,6 +874,25 @@ either( T ( *f )( const QVariantMap&, const QString&, U ),
     }
 }
 
+// TODO:3.3: Remove
+static void
+copyLegacy( const QVariantMap& source, const QString& sourceKey, QVariantMap& target, const QString& targetKey )
+{
+    if ( source.contains( sourceKey ) )
+    {
+        if ( target.contains( targetKey ) )
+        {
+            cWarning() << "Legacy *users* key" << sourceKey << "ignored.";
+        }
+        else
+        {
+            const QVariant legacyValue = source.value( sourceKey );
+            cWarning() << "Legacy *users* key" << sourceKey << "overrides hostname-settings.";
+            target.insert( targetKey, legacyValue );
+        }
+    }
+}
+
 /** @brief Tidy up a list of names
  *
  * Remove duplicates, apply lowercase, sort.
@@ -892,38 +911,45 @@ Config::setConfigurationMap( const QVariantMap& configurationMap )
     // Handle *user* key and subkeys and legacy settings
     {
         bool ok = false;  // Ignored
-        QVariantMap userSettings = Calamares::getSubMap( configurationMap, "user", ok );
+        QVariantMap userSettings = CalamaresUtils::getSubMap( configurationMap, "user", ok );
+
+        // TODO:3.3: Remove calls to copyLegacy
+        copyLegacy( configurationMap, "userShell", userSettings, "shell" );
 
         QString shell( QLatin1String( "/bin/bash" ) );  // as if it's not set at all
         if ( userSettings.contains( "shell" ) )
         {
-            shell = Calamares::getString( userSettings, "shell" );
+            shell = CalamaresUtils::getString( userSettings, "shell" );
         }
         // Now it might be explicitly set to empty, which is ok
         setUserShell( shell );
 
-        m_forbiddenLoginNames = Calamares::getStringList( userSettings, "forbidden_names" );
+        m_forbiddenLoginNames = CalamaresUtils::getStringList( userSettings, "forbidden_names" );
         m_forbiddenLoginNames << alwaysForbiddenLoginNames();
         tidy( m_forbiddenLoginNames );
     }
 
     setAutoLoginGroup( either< QString, const QString& >(
-        Calamares::getString, configurationMap, "autologinGroup", "autoLoginGroup", QString() ) );
-    setSudoersGroup( Calamares::getString( configurationMap, "sudoersGroup" ) );
-    m_sudoStyle = Calamares::getBool( configurationMap, "sudoersConfigureWithGroup", false ) ? SudoStyle::UserAndGroup
-                                                                                             : SudoStyle::UserOnly;
+        CalamaresUtils::getString, configurationMap, "autologinGroup", "autoLoginGroup", QString() ) );
+    setSudoersGroup( CalamaresUtils::getString( configurationMap, "sudoersGroup" ) );
+    m_sudoStyle = CalamaresUtils::getBool( configurationMap, "sudoersConfigureWithGroup", false )
+        ? SudoStyle::UserAndGroup
+        : SudoStyle::UserOnly;
 
     // Handle *hostname* key and subkeys and legacy settings
     {
         bool ok = false;  // Ignored
-        QVariantMap hostnameSettings = Calamares::getSubMap( configurationMap, "hostname", ok );
+        QVariantMap hostnameSettings = CalamaresUtils::getSubMap( configurationMap, "hostname", ok );
 
+        // TODO:3.3: Remove calls to copyLegacy
+        copyLegacy( configurationMap, "setHostname", hostnameSettings, "location" );
+        copyLegacy( configurationMap, "writeHostsFile", hostnameSettings, "writeHostsFile" );
         m_hostnameAction = getHostNameAction( hostnameSettings );
-        m_writeEtcHosts = Calamares::getBool( hostnameSettings, "writeHostsFile", true );
+        m_writeEtcHosts = CalamaresUtils::getBool( hostnameSettings, "writeHostsFile", true );
         m_hostnameTemplate
-            = Calamares::getString( hostnameSettings, "template", QStringLiteral( "${first}-${product}" ) );
+            = CalamaresUtils::getString( hostnameSettings, "template", QStringLiteral( "${first}-${product}" ) );
 
-        m_forbiddenHostNames = Calamares::getStringList( hostnameSettings, "forbidden_names" );
+        m_forbiddenHostNames = CalamaresUtils::getStringList( hostnameSettings, "forbidden_names" );
         m_forbiddenHostNames << alwaysForbiddenHostNames();
         tidy( m_forbiddenHostNames );
     }
@@ -932,17 +958,20 @@ Config::setConfigurationMap( const QVariantMap& configurationMap )
 
     // Renaming of Autologin -> AutoLogin in 4ffa79d4cf also affected
     // configuration keys, which was not intended. Accept both.
-    m_doAutoLogin = either(
-        Calamares::getBool, configurationMap, QStringLiteral( "doAutologin" ), QStringLiteral( "doAutoLogin" ), false );
+    m_doAutoLogin = either( CalamaresUtils::getBool,
+                            configurationMap,
+                            QStringLiteral( "doAutologin" ),
+                            QStringLiteral( "doAutoLogin" ),
+                            false );
 
-    m_writeRootPassword = Calamares::getBool( configurationMap, "setRootPassword", true );
+    m_writeRootPassword = CalamaresUtils::getBool( configurationMap, "setRootPassword", true );
     Calamares::JobQueue::instance()->globalStorage()->insert( "setRootPassword", m_writeRootPassword );
 
-    m_reuseUserPasswordForRoot = Calamares::getBool( configurationMap, "doReusePassword", false );
+    m_reuseUserPasswordForRoot = CalamaresUtils::getBool( configurationMap, "doReusePassword", false );
 
-    m_permitWeakPasswords = Calamares::getBool( configurationMap, "allowWeakPasswords", false );
+    m_permitWeakPasswords = CalamaresUtils::getBool( configurationMap, "allowWeakPasswords", false );
     m_requireStrongPasswords
-        = !m_permitWeakPasswords || !Calamares::getBool( configurationMap, "allowWeakPasswordsDefault", false );
+        = !m_permitWeakPasswords || !CalamaresUtils::getBool( configurationMap, "allowWeakPasswordsDefault", false );
 
     // If the value doesn't exist, or isn't a map, this gives an empty map -- no problem
     auto pr_checks( configurationMap.value( "passwordRequirements" ).toMap() );
@@ -969,7 +998,7 @@ Config::finalizeGlobalStorage() const
     {
         gs->insert( "reuseRootPassword", reuseUserPasswordForRoot() );
     }
-    gs->insert( "password", Calamares::String::obscure( userPassword() ) );
+    gs->insert( "password", CalamaresUtils::obscure( userPassword() ) );
 }
 
 Calamares::JobList

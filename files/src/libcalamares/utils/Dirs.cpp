@@ -30,7 +30,7 @@
 
 using std::cerr;
 
-namespace Calamares
+namespace CalamaresUtils
 {
 
 static QDir s_appDataDir( CMAKE_INSTALL_FULL_DATADIR );
@@ -68,6 +68,7 @@ isWritableDir( const QDir& dir )
     }
     return true;
 }
+
 
 void
 setAppDataDir( const QDir& dir )
@@ -146,11 +147,13 @@ isAppDataDirOverridden()
     return s_isAppDataDirOverridden;
 }
 
+
 QDir
 appDataDir()
 {
     return s_appDataDir;
 }
+
 
 QDir
 systemLibDir()
@@ -158,6 +161,7 @@ systemLibDir()
     QDir path( CMAKE_INSTALL_FULL_LIBDIR );
     return path;
 }
+
 
 QDir
 appLogDir()
@@ -180,4 +184,4 @@ appLogDir()
     return QDir::temp();
 }
 
-}  // namespace Calamares
+}  // namespace CalamaresUtils

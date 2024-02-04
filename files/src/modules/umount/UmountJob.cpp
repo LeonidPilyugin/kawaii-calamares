@@ -15,8 +15,8 @@
 #include "UmountJob.h"
 
 #include "partition/Mount.h"
+#include "utils/CalamaresUtilsSystem.h"
 #include "utils/Logger.h"
-#include "utils/System.h"
 #include "utils/Variant.h"
 
 #include "GlobalStorage.h"
@@ -36,7 +36,7 @@ UmountJob::~UmountJob() {}
 QString
 UmountJob::prettyName() const
 {
-    return tr( "Unmounting file systems…", "@status" );
+    return tr( "Unmount file systems." );
 }
 
 static Calamares::JobResult
@@ -58,7 +58,7 @@ unmountTargetMounts( const QString& rootMountPoint )
         targetMountPath.append( '/' );
     }
 
-    using MtabInfo = Calamares::Partition::MtabInfo;
+    using MtabInfo = CalamaresUtils::Partition::MtabInfo;
     auto targetMounts = MtabInfo::fromMtabFilteredByPrefix( targetMountPath );
     std::sort( targetMounts.begin(), targetMounts.end(), MtabInfo::mountPointOrder );
 
@@ -67,7 +67,7 @@ unmountTargetMounts( const QString& rootMountPoint )
     {
         // Returns the program's exit code, so 0 is success and non-0
         // (truthy) is a failure.
-        if ( Calamares::Partition::unmount( m.mountPoint, { "-lv" } ) )
+        if ( CalamaresUtils::Partition::unmount( m.mountPoint, { "-lv" } ) )
         {
             return Calamares::JobResult::error(
                 QCoreApplication::translate( UmountJob::staticMetaObject.className(),
@@ -82,7 +82,7 @@ unmountTargetMounts( const QString& rootMountPoint )
 }
 
 static Calamares::JobResult
-exportZFSPools()
+exportZFSPools( const QString& rootMountPoint )
 {
     auto* gs = Calamares::JobQueue::instance()->globalStorage();
     QStringList poolNames;
@@ -103,7 +103,7 @@ exportZFSPools()
 
     for ( const auto& poolName : poolNames )
     {
-        auto result = Calamares::System::runCommand( { "zpool", "export", poolName }, std::chrono::seconds( 30 ) );
+        auto result = CalamaresUtils::System::runCommand( { "zpool", "export", poolName }, std::chrono::seconds( 30 ) );
         if ( result.getExitCode() )
         {
             cWarning() << "Failed to export pool" << result.getOutput();
@@ -113,10 +113,11 @@ exportZFSPools()
     return Calamares::JobResult::ok();
 }
 
+
 Calamares::JobResult
 UmountJob::exec()
 {
-    const auto* sys = Calamares::System::instance();
+    const auto* sys = CalamaresUtils::System::instance();
     if ( !sys )
     {
         return Calamares::JobResult::internalError(
@@ -141,7 +142,7 @@ UmountJob::exec()
     }
     // For ZFS systems, export the pools
     {
-        auto r = exportZFSPools();
+        auto r = exportZFSPools( gs->value( "rootMountPoint" ).toString() );
         if ( !r )
         {
             return r;
@@ -154,7 +155,6 @@ UmountJob::exec()
 void
 UmountJob::setConfigurationMap( const QVariantMap& map )
 {
-    Q_UNUSED( map )
 }
 
 CALAMARES_PLUGIN_FACTORY_DEFINITION( UmountJobFactory, registerPlugin< UmountJob >(); )

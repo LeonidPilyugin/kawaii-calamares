@@ -14,11 +14,8 @@
 #include <QListView>
 
 /**
- * @brief Displays progress through the list of (visible) steps
- *
- * The ProgressTreeView class is a modified QListView which displays the
+ * @brief The ProgressTreeView class is a modified QTreeView which displays the
  * available view steps and the user's progress through them.
- * Since Calamares doesn't support "sub steps", it isn't really a tree.
  */
 class ProgressTreeView : public QListView
 {

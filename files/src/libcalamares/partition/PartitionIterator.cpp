@@ -17,7 +17,7 @@
 #include <kpmcore/core/partition.h>
 #include <kpmcore/core/partitiontable.h>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 namespace Partition
 {
@@ -136,4 +136,4 @@ PartitionIterator::end( PartitionTable* table )
 }
 
 }  // namespace Partition
-}  // namespace Calamares
+}  // namespace CalamaresUtils

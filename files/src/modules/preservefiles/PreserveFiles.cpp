@@ -12,16 +12,14 @@
 #include "CalamaresVersion.h"
 #include "GlobalStorage.h"
 #include "JobQueue.h"
-#include "compat/Variant.h"
+#include "utils/CalamaresUtilsSystem.h"
 #include "utils/CommandList.h"
 #include "utils/Logger.h"
-#include "utils/StringExpander.h"
-#include "utils/System.h"
 #include "utils/Units.h"
 
 #include <QFile>
 
-using namespace Calamares::Units;
+using namespace CalamaresUtils::Units;
 
 QString
 atReplacements( QString s )
@@ -39,8 +37,7 @@ atReplacements( QString s )
         user = gs->value( "username" ).toString();
     }
 
-    Calamares::String::DictionaryExpander d;
-    return d.add( QStringLiteral( "ROOT" ), root ).add( QStringLiteral( "USER" ), user ).expand( s );
+    return s.replace( "@@ROOT@@", root ).replace( "@@USER@@", user );
 }
 
 PreserveFiles::PreserveFiles( QObject* parent )
@@ -53,7 +50,7 @@ PreserveFiles::~PreserveFiles() {}
 QString
 PreserveFiles::prettyName() const
 {
-    return tr( "Saving files for later…", "@status" );
+    return tr( "Saving files for later ..." );
 }
 
 Calamares::JobResult
@@ -98,7 +95,7 @@ PreserveFiles::setConfigurationMap( const QVariantMap& configurationMap )
         return;
     }
 
-    if ( Calamares::typeOf( files ) != Calamares::ListVariantType )
+    if ( files.type() != QVariant::List )
     {
         cDebug() << "Configuration key 'files' is not a list for preservefiles.";
         return;
@@ -109,7 +106,7 @@ PreserveFiles::setConfigurationMap( const QVariantMap& configurationMap )
     {
         defaultPermissions = QStringLiteral( "root:root:0400" );
     }
-    Calamares::Permissions perm( defaultPermissions );
+    CalamaresUtils::Permissions perm( defaultPermissions );
 
     for ( const auto& li : files.toList() )
     {

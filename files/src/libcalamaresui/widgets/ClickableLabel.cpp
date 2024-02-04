@@ -13,8 +13,7 @@
 
 namespace Calamares
 {
-namespace Widgets
-{
+
 
 ClickableLabel::ClickableLabel( QWidget* parent )
     : QLabel( parent )
@@ -48,5 +47,5 @@ ClickableLabel::mouseReleaseEvent( QMouseEvent* event )
         emit clicked();
     }
 }
-}  // namespace Widgets
+
 }  // namespace Calamares

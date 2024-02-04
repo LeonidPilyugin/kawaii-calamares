@@ -15,7 +15,7 @@
 
 #include "ResultsListWidget.h"
 
-#include "utils/Gui.h"
+#include "utils/CalamaresUtilsGui.h"
 #include "utils/Logger.h"
 #include "utils/Retranslator.h"
 #include "widgets/WaitingWidget.h"
@@ -31,7 +31,7 @@ CheckerContainer::CheckerContainer( Config* config, QWidget* parent )
 {
     QBoxLayout* mainLayout = new QHBoxLayout;
     setLayout( mainLayout );
-    Calamares::unmarginLayout( mainLayout );
+    CalamaresUtils::unmarginLayout( mainLayout );
 
     mainLayout->addWidget( m_waitingWidget );
     CALAMARES_RETRANSLATE( if ( m_waitingWidget )
@@ -65,19 +65,13 @@ CheckerContainer::requirementsComplete( bool ok )
         }
     }
 
-    if ( m_waitingWidget )
-    {
-        layout()->removeWidget( m_waitingWidget );
-        m_waitingWidget->deleteLater();
-        m_waitingWidget = nullptr;  // Don't delete in destructor
-    }
-    if ( !m_checkerWidget )
-    {
-        m_checkerWidget = new ResultsListWidget( m_config, this );
-        m_checkerWidget->setObjectName( "requirementsChecker" );
-        layout()->addWidget( m_checkerWidget );
-    }
-    m_checkerWidget->requirementsComplete();
+    layout()->removeWidget( m_waitingWidget );
+    m_waitingWidget->deleteLater();
+    m_waitingWidget = nullptr;  // Don't delete in destructor
+
+    m_checkerWidget = new ResultsListWidget( m_config, this );
+    m_checkerWidget->setObjectName( "requirementsChecker" );
+    layout()->addWidget( m_checkerWidget );
 
     m_verdict = ok;
 }

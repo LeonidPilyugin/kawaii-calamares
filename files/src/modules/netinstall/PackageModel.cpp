@@ -10,7 +10,6 @@
 
 #include "PackageModel.h"
 
-#include "compat/Variant.h"
 #include "utils/Logger.h"
 #include "utils/Variant.h"
 #include "utils/Yaml.h"
@@ -189,7 +188,7 @@ PackageModel::flags( const QModelIndex& index ) const
     if ( index.column() == NameColumn )
     {
         PackageTreeItem* item = static_cast< PackageTreeItem* >( index.internalPointer() );
-        if ( item->isImmutable() || item->isNoncheckable() )
+        if ( item->isImmutable() )
         {
             return QAbstractItemModel::flags( index );  //Qt::NoItemFlags;
         }
@@ -274,13 +273,13 @@ PackageModel::setupModelData( const QVariantList& groupList, PackageTreeItem* pa
         PackageTreeItem* item = new PackageTreeItem( groupMap, PackageTreeItem::GroupTag { parent } );
         if ( groupMap.contains( "selected" ) )
         {
-            item->setSelected( Calamares::getBool( groupMap, "selected", false ) ? Qt::Checked : Qt::Unchecked );
+            item->setSelected( CalamaresUtils::getBool( groupMap, "selected", false ) ? Qt::Checked : Qt::Unchecked );
         }
         if ( groupMap.contains( "packages" ) )
         {
             for ( const auto& packageName : groupMap.value( "packages" ).toList() )
             {
-                if ( Calamares::typeOf( packageName ) == Calamares::StringVariantType )
+                if ( packageName.type() == QVariant::String )
                 {
                     item->appendChild( new PackageTreeItem( packageName.toString(), item ) );
                 }
@@ -302,7 +301,7 @@ PackageModel::setupModelData( const QVariantList& groupList, PackageTreeItem* pa
         {
             bool haveWarned = false;
             const auto& subgroupValue = groupMap.value( "subgroups" );
-            if ( !subgroupValue.canConvert< QVariantList >() )
+            if ( !subgroupValue.canConvert( QVariant::List ) )
             {
                 cWarning() << "*subgroups* under" << item->name() << "is not a list.";
                 haveWarned = true;

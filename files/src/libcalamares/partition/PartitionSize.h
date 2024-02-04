@@ -18,7 +18,7 @@
 // Qt
 #include <QString>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 namespace Partition
 {
@@ -114,6 +114,6 @@ public:
 };
 
 }  // namespace Partition
-}  // namespace Calamares
+}  // namespace CalamaresUtils
 
 #endif  // PARTITION_PARTITIONSIZE_H

@@ -24,9 +24,7 @@ void
 FixedAspectRatioLabel::setPixmap( const QPixmap& pixmap )
 {
     m_pixmap = pixmap;
-    m_pixmap.setDevicePixelRatio( devicePixelRatio() );
-    QLabel::setPixmap( m_pixmap.scaled(
-        contentsRect().size() * m_pixmap.devicePixelRatio(), Qt::KeepAspectRatio, Qt::SmoothTransformation ) );
+    QLabel::setPixmap( pixmap.scaled( contentsRect().size(), Qt::KeepAspectRatio, Qt::SmoothTransformation ) );
 }
 
 
@@ -34,6 +32,5 @@ void
 FixedAspectRatioLabel::resizeEvent( QResizeEvent* event )
 {
     Q_UNUSED( event )
-    QLabel::setPixmap( m_pixmap.scaled(
-        contentsRect().size() * m_pixmap.devicePixelRatio(), Qt::KeepAspectRatio, Qt::SmoothTransformation ) );
+    QLabel::setPixmap( m_pixmap.scaled( contentsRect().size(), Qt::KeepAspectRatio, Qt::SmoothTransformation ) );
 }

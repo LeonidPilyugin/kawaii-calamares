@@ -21,7 +21,9 @@ ViewStep::ViewStep( QObject* parent )
 {
 }
 
+
 ViewStep::~ViewStep() {}
+
 
 QString
 ViewStep::prettyStatus() const
@@ -40,6 +42,7 @@ ViewStep::onActivate()
 {
 }
 
+
 void
 ViewStep::onLeave()
 {
@@ -55,17 +58,20 @@ ViewStep::back()
 {
 }
 
+
 void
 ViewStep::setModuleInstanceKey( const Calamares::ModuleSystem::InstanceKey& instanceKey )
 {
     m_instanceKey = instanceKey;
 }
 
+
 void
 ViewStep::setConfigurationMap( const QVariantMap& configurationMap )
 {
     Q_UNUSED( configurationMap )
 }
+
 
 RequirementsList
 ViewStep::checkRequirements()

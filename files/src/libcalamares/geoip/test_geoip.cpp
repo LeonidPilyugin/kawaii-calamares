@@ -11,6 +11,7 @@
  * This is a test-application that does one GeoIP parse.
  */
 
+
 #include "GeoIPFixed.h"
 #include "GeoIPJSON.h"
 #ifdef QT_XML_LIB
@@ -22,7 +23,7 @@
 #include <iostream>
 
 using std::cerr;
-using namespace Calamares::GeoIP;
+using namespace CalamaresUtils::GeoIP;
 
 int
 main( int argc, char** argv )

@@ -15,10 +15,10 @@
 #include "GlobalStorage.h"
 #include "JobQueue.h"
 
-#include "compat/Variant.h"
 #include "utils/CommandList.h"
 #include "utils/Logger.h"
 #include "utils/Variant.h"
+
 
 ContextualProcessBinding::~ContextualProcessBinding()
 {
@@ -30,7 +30,7 @@ ContextualProcessBinding::~ContextualProcessBinding()
 }
 
 void
-ContextualProcessBinding::append( const QString& value, Calamares::CommandList* commands )
+ContextualProcessBinding::append( const QString& value, CalamaresUtils::CommandList* commands )
 {
     m_checks.append( ValueCheck( value, commands ) );
     if ( value == QString( "*" ) )
@@ -62,7 +62,7 @@ ContextualProcessBinding::run( const QString& value ) const
 static bool
 fetch( QString& value, QStringList& selector, int index, const QVariant& v )
 {
-    if ( !v.canConvert< QVariantMap >() )
+    if ( !v.canConvert( QMetaType::QVariantMap ) )
     {
         return false;
     }
@@ -78,6 +78,7 @@ fetch( QString& value, QStringList& selector, int index, const QVariant& v )
         return fetch( value, selector, index + 1, map.value( key ) );
     }
 }
+
 
 bool
 ContextualProcessBinding::fetch( Calamares::GlobalStorage* storage, QString& value ) const
@@ -99,21 +100,25 @@ ContextualProcessBinding::fetch( Calamares::GlobalStorage* storage, QString& val
     }
 }
 
+
 ContextualProcessJob::ContextualProcessJob( QObject* parent )
     : Calamares::CppJob( parent )
 {
 }
+
 
 ContextualProcessJob::~ContextualProcessJob()
 {
     qDeleteAll( m_commands );
 }
 
+
 QString
 ContextualProcessJob::prettyName() const
 {
-    return tr( "Performing contextual processes' job…", "@status" );
+    return tr( "Contextual Processes Job" );
 }
+
 
 Calamares::JobResult
 ContextualProcessJob::exec()
@@ -139,11 +144,12 @@ ContextualProcessJob::exec()
     return Calamares::JobResult::ok();
 }
 
+
 void
 ContextualProcessJob::setConfigurationMap( const QVariantMap& configurationMap )
 {
-    bool dontChroot = Calamares::getBool( configurationMap, "dontChroot", false );
-    qint64 timeout = Calamares::getInteger( configurationMap, "timeout", 10 );
+    bool dontChroot = CalamaresUtils::getBool( configurationMap, "dontChroot", false );
+    qint64 timeout = CalamaresUtils::getInteger( configurationMap, "timeout", 10 );
     if ( timeout < 1 )
     {
         timeout = 10;
@@ -157,7 +163,7 @@ ContextualProcessJob::setConfigurationMap( const QVariantMap& configurationMap )
             continue;
         }
 
-        if ( Calamares::typeOf( iter.value() ) != Calamares::MapVariantType )
+        if ( iter.value().type() != QVariant::Map )
         {
             cWarning() << moduleInstanceKey() << "bad configuration values for" << variableName;
             continue;
@@ -176,8 +182,8 @@ ContextualProcessJob::setConfigurationMap( const QVariantMap& configurationMap )
                 continue;
             }
 
-            Calamares::CommandList* commands
-                = new Calamares::CommandList( valueiter.value(), !dontChroot, std::chrono::seconds( timeout ) );
+            CalamaresUtils::CommandList* commands
+                = new CalamaresUtils::CommandList( valueiter.value(), !dontChroot, std::chrono::seconds( timeout ) );
 
             binding->append( valueString, commands );
         }

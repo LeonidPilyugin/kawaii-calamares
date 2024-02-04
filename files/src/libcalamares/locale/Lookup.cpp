@@ -12,7 +12,7 @@
 
 #include "CountryData_p.cpp"
 
-namespace Calamares
+namespace CalamaresUtils
 {
 namespace Locale
 {
@@ -95,4 +95,4 @@ languageForCountry( QLocale::Country country )
 }
 
 }  // namespace Locale
-}  // namespace Calamares
+}  // namespace CalamaresUtils

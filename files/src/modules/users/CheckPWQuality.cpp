@@ -13,7 +13,6 @@
 
 #include "CheckPWQuality.h"
 
-#include "compat/Variant.h"
 #include "utils/Logger.h"
 
 #include <QCoreApplication>
@@ -42,7 +41,7 @@ PasswordCheck::PasswordCheck( MessageFunc m, AcceptFunc a, Weight weight )
 DEFINE_CHECK_FUNC( minLength )
 {
     int minLength = -1;
-    if ( value.canConvert< int >() )
+    if ( value.canConvert( QVariant::Int ) )
     {
         minLength = value.toInt();
     }
@@ -58,7 +57,7 @@ DEFINE_CHECK_FUNC( minLength )
 DEFINE_CHECK_FUNC( maxLength )
 {
     int maxLength = -1;
-    if ( value.canConvert< int >() )
+    if ( value.canConvert( QVariant::Int ) )
     {
         maxLength = value.toInt();
     }
@@ -345,7 +344,7 @@ private:
 
 DEFINE_CHECK_FUNC( libpwquality )
 {
-    if ( !value.canConvert< QVariantList >() )
+    if ( !value.canConvert( QVariant::List ) )
     {
         cWarning() << "libpwquality settings is not a list";
         return;
@@ -356,7 +355,7 @@ DEFINE_CHECK_FUNC( libpwquality )
     auto settings = std::make_shared< PWSettingsHolder >();
     for ( const auto& v : l )
     {
-        if ( Calamares::typeOf( v ) == Calamares::StringVariantType )
+        if ( v.type() == QVariant::String )
         {
             QString option = v.toString();
             int r = settings->set( option );

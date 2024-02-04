@@ -28,7 +28,10 @@
 namespace Calamares
 {
 class GlobalStorage;
+}
 
+namespace CalamaresUtils
+{
 namespace Locale
 {
 
@@ -78,6 +81,6 @@ DLLEXPORT void clearGS( Calamares::GlobalStorage& gs );
 DLLEXPORT QString readGS( Calamares::GlobalStorage& gs, const QString& key );
 
 }  // namespace Locale
-}  // namespace Calamares
+}  // namespace CalamaresUtils
 
 #endif

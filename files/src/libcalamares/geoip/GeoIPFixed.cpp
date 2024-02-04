@@ -9,7 +9,7 @@
 
 #include "GeoIPFixed.h"
 
-namespace Calamares
+namespace CalamaresUtils
 {
 namespace GeoIP
 {
@@ -32,4 +32,4 @@ GeoIPFixed::processReply( const QByteArray& data )
 }
 
 }  // namespace GeoIP
-}  // namespace Calamares
+}  // namespace CalamaresUtils

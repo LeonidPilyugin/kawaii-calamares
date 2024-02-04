@@ -10,11 +10,11 @@
 
 #include "Sync.h"
 
+#include "utils/CalamaresUtilsSystem.h"
 #include "utils/Logger.h"
-#include "utils/System.h"
 
 void
-Calamares::Partition::sync()
+CalamaresUtils::Partition::sync()
 {
     /* I would normally use full paths here, e.g. /sbin/udevadm and /bin/sync,
      * but there's enough variation / opinion on where these executables
@@ -23,7 +23,7 @@ Calamares::Partition::sync()
      * either chroot(8) or env(1) is used to run the command,
      * and they do suitable lookup.
      */
-    auto r = Calamares::System::runCommand( { "udevadm", "settle" }, std::chrono::seconds( 10 ) );
+    auto r = CalamaresUtils::System::runCommand( { "udevadm", "settle" }, std::chrono::seconds( 10 ) );
 
     if ( r.getExitCode() != 0 )
     {
@@ -31,5 +31,5 @@ Calamares::Partition::sync()
         r.explainProcess( "udevadm", std::chrono::seconds( 10 ) );
     }
 
-    Calamares::System::runCommand( { "sync" }, std::chrono::seconds( 10 ) );
+    CalamaresUtils::System::runCommand( { "sync" }, std::chrono::seconds( 10 ) );
 }

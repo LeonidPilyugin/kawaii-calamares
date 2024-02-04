@@ -17,8 +17,8 @@
 #include <QObject>
 #include <QtTest/QtTest>
 
-using SizeUnit = Calamares::Partition::SizeUnit;
-using PartitionSize = Calamares::Partition::PartitionSize;
+using SizeUnit = CalamaresUtils::Partition::SizeUnit;
+using PartitionSize = CalamaresUtils::Partition::PartitionSize;
 
 Q_DECLARE_METATYPE( SizeUnit )
 
@@ -161,8 +161,8 @@ PartitionServiceTests::testUnitNormalisation()
 void
 PartitionServiceTests::testFilesystemGS()
 {
-    using Calamares::Partition::isFilesystemUsedGS;
-    using Calamares::Partition::useFilesystemGS;
+    using CalamaresUtils::Partition::isFilesystemUsedGS;
+    using CalamaresUtils::Partition::useFilesystemGS;
 
     // Some filesystems names, they don't have to be real
     const QStringList fsNames { "ext4", "zfs", "berries", "carrot" };
@@ -212,7 +212,7 @@ PartitionServiceTests::testFilesystemGS()
     useFilesystemGS( &gs, "ext4", true );
     QVERIFY( isFilesystemUsedGS( &gs, "EXT4" ) );
 
-    Calamares::Partition::clearFilesystemGS( &gs );
+    CalamaresUtils::Partition::clearFilesystemGS( &gs );
     QVERIFY( !isFilesystemUsedGS( &gs, "ZFS" ) );
     QVERIFY( !isFilesystemUsedGS( &gs, "EXT4" ) );
     QVERIFY( !isFilesystemUsedGS( &gs, "ext4" ) );

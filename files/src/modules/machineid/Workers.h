@@ -7,11 +7,14 @@
  *
  */
 
-#ifndef MACHINEID_WORKERS_H
-#define MACHINEID_WORKERS_H
+#ifndef WORKERS_H
+#define WORKERS_H
 
 #include "Job.h"
 
+/// @brief Utility functions for doing the random-data stuff for MachineId
+namespace MachineId
+{
 /** @brief Utility functions
  *
  * These probably belong in libcalamares, since they're general utilities
@@ -49,7 +52,6 @@ createEntropy( const EntropyGeneration kind, const QString& rootMountPoint, cons
  * Creating UUIDs for DBUS and SystemD.
  */
 
-
 /// @brief Create a new DBus UUID file
 Calamares::JobResult createDBusMachineId( const QString& rootMountPoint, const QString& fileName );
 
@@ -57,14 +59,9 @@ Calamares::JobResult createDBusMachineId( const QString& rootMountPoint, const Q
 Calamares::JobResult
 createDBusLink( const QString& rootMountPoint, const QString& fileName, const QString& systemdFileName );
 
-enum class SystemdMachineIdStyle
-{
-    Uuid,
-    Blank,
-    Uninitialized
-};
+Calamares::JobResult createSystemdMachineId( const QString& rootMountPoint, const QString& fileName );
 
-Calamares::JobResult
-createSystemdMachineId( SystemdMachineIdStyle style, const QString& rootMountPoint, const QString& fileName );
+
+}  // namespace MachineId
 
 #endif  // WORKERS_H

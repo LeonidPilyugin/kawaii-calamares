@@ -14,7 +14,7 @@
 
 #include <QObject>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 namespace Partition
 {
@@ -30,13 +30,13 @@ prettyNameForFileSystemType( FileSystem::Type t )
     switch ( t )
     {
     case FileSystem::Unknown:
-        return QObject::tr( "unknown", "@partition info" );
+        return QObject::tr( "unknown" );
     case FileSystem::Extended:
-        return QObject::tr( "extended", "@partition info" );
+        return QObject::tr( "extended" );
     case FileSystem::Unformatted:
-        return QObject::tr( "unformatted", "@partition info" );
+        return QObject::tr( "unformatted" );
     case FileSystem::LinuxSwap:
-        return QObject::tr( "swap", "@partition info" );
+        return QObject::tr( "swap" );
     case FileSystem::Fat16:
     case FileSystem::Fat32:
     case FileSystem::Ntfs:
@@ -46,7 +46,6 @@ prettyNameForFileSystemType( FileSystem::Type t )
     case FileSystem::Ufs:
     case FileSystem::Hpfs:
     case FileSystem::Luks:
-    case FileSystem::Luks2:
     case FileSystem::Ocfs2:
     case FileSystem::Zfs:
     case FileSystem::Nilfs2:
@@ -92,4 +91,4 @@ untranslatedFS( FileSystem::Type t )
 }
 
 }  // namespace Partition
-}  // namespace Calamares
+}  // namespace CalamaresUtils

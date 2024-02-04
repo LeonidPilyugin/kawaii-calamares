@@ -12,7 +12,7 @@
 
 #include <QString>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 
 /**
@@ -90,6 +90,6 @@ private:
     bool m_valid;
 };
 
-}  // namespace Calamares
+}  // namespace CalamaresUtils
 
 #endif  // LIBCALAMARES_PERMISSIONS_H

@@ -35,7 +35,7 @@ private:
     QString targetPartitions() const;
 
 private:
-    Calamares::Partition::KPMManager m_kpmcore;
+    CalamaresUtils::Partition::KPMManager m_kpmcore;
     LvmDevice* m_device;
     QVector< const Partition* > m_partitionList;
 };

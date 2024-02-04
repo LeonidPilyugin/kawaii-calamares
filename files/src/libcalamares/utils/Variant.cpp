@@ -17,12 +17,11 @@
 #include "Variant.h"
 
 #include "Logger.h"
-#include "compat/Variant.h"
 
 #include <QString>
 #include <QVariantMap>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 bool
 getBool( const QVariantMap& map, const QString& key, bool d )
@@ -30,7 +29,7 @@ getBool( const QVariantMap& map, const QString& key, bool d )
     if ( map.contains( key ) )
     {
         auto v = map.value( key );
-        if ( Calamares::typeOf( v ) == Calamares::BoolVariantType )
+        if ( v.type() == QVariant::Bool )
         {
             return v.toBool();
         }
@@ -44,7 +43,7 @@ getString( const QVariantMap& map, const QString& key, const QString& d )
     if ( map.contains( key ) )
     {
         auto v = map.value( key );
-        if ( Calamares::typeOf( v ) == Calamares::StringVariantType )
+        if ( v.type() == QVariant::String )
         {
             return v.toString();
         }
@@ -58,7 +57,7 @@ getStringList( const QVariantMap& map, const QString& key, const QStringList& d 
     if ( map.contains( key ) )
     {
         auto v = map.value( key );
-        if ( v.canConvert< QStringList >() )
+        if ( v.canConvert( QMetaType::QStringList ) )
         {
             return v.toStringList();
         }
@@ -72,7 +71,7 @@ getList( const QVariantMap& map, const QString& key, const QList< QVariant >& d 
     if ( map.contains( key ) )
     {
         auto v = map.value( key );
-        if ( v.canConvert< QVariantList >() )
+        if ( v.canConvert( QVariant::List ) )
         {
             return v.toList();
         }
@@ -108,11 +107,11 @@ getDouble( const QVariantMap& map, const QString& key, double d )
     if ( map.contains( key ) )
     {
         auto v = map.value( key );
-        if ( Calamares::typeOf( v ) == Calamares::IntVariantType )
+        if ( v.type() == QVariant::Int )
         {
             return v.toInt();
         }
-        else if ( Calamares::typeOf( v ) == Calamares::DoubleVariantType )
+        else if ( v.type() == QVariant::Double )
         {
             return v.toDouble();
         }
@@ -127,7 +126,7 @@ getSubMap( const QVariantMap& map, const QString& key, bool& success, const QVar
     if ( map.contains( key ) )
     {
         auto v = map.value( key );
-        if ( Calamares::typeOf( v ) == Calamares::MapVariantType )
+        if ( v.type() == QVariant::Map )
         {
             success = true;
             return v.toMap();
@@ -136,4 +135,4 @@ getSubMap( const QVariantMap& map, const QString& key, bool& success, const QVar
     return d;
 }
 
-}  // namespace Calamares
+}  // namespace CalamaresUtils

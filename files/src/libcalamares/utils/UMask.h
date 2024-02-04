@@ -15,7 +15,7 @@
 
 #include <sys/types.h>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 /** @brief Wrapper for umask(2)
  *
@@ -45,6 +45,6 @@ public:
 private:
     mode_t m_mode;
 };
-}  // namespace Calamares
+}  // namespace CalamaresUtils
 
 #endif

@@ -13,8 +13,8 @@
 
 #include "GlobalStorage.h"
 #include "JobQueue.h"
+#include "utils/CalamaresUtilsSystem.h"
 #include "utils/Logger.h"
-#include "utils/System.h"
 
 #include <QDBusConnection>
 #include <QDBusInterface>
@@ -22,7 +22,7 @@
 #include <QDir>
 #include <QFile>
 
-using WriteMode = Calamares::System::WriteMode;
+using WriteMode = CalamaresUtils::System::WriteMode;
 
 SetHostNameJob::SetHostNameJob( const Config* c )
     : Calamares::Job()
@@ -36,22 +36,24 @@ SetHostNameJob::prettyName() const
     return tr( "Set hostname %1" ).arg( m_config->hostname() );
 }
 
+
 QString
 SetHostNameJob::prettyDescription() const
 {
     return tr( "Set hostname <strong>%1</strong>." ).arg( m_config->hostname() );
 }
 
+
 QString
 SetHostNameJob::prettyStatusMessage() const
 {
-    return tr( "Setting hostname %1…", "@status" ).arg( m_config->hostname() );
+    return tr( "Setting hostname %1." ).arg( m_config->hostname() );
 }
 
 STATICTEST bool
 setFileHostname( const QString& hostname )
 {
-    return Calamares::System::instance()->createTargetFile(
+    return CalamaresUtils::System::instance()->createTargetFile(
         QStringLiteral( "/etc/hostname" ), ( hostname + '\n' ).toUtf8(), WriteMode::Overwrite );
 }
 
@@ -70,7 +72,7 @@ ff02::2    ip6-allrouters
 )" );
 
     const QString etc_hosts = standard_hosts + ( hostname.isEmpty() ? QString() : this_host.arg( hostname ) );
-    return Calamares::System::instance()->createTargetFile(
+    return CalamaresUtils::System::instance()->createTargetFile(
         QStringLiteral( "/etc/hosts" ), etc_hosts.toUtf8(), WriteMode::Overwrite );
 }
 
@@ -110,6 +112,7 @@ setSystemdHostname( const QString& hostname )
     return success;
 }
 
+
 Calamares::JobResult
 SetHostNameJob::exec()
 {
@@ -144,7 +147,7 @@ SetHostNameJob::exec()
         setSystemdHostname( m_config->hostname() );
         break;
     case HostNameAction::Transient:
-        Calamares::System::instance()->removeTargetFile( QStringLiteral( "/etc/hostname" ) );
+        CalamaresUtils::System::instance()->removeTargetFile( QStringLiteral( "/etc/hostname" ) );
         break;
     }
 
@@ -156,6 +159,7 @@ SetHostNameJob::exec()
             return Calamares::JobResult::error( tr( "Cannot write hostname to target system" ) );
         }
     }
+
 
     return Calamares::JobResult::ok();
 }

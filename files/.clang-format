@@ -22,7 +22,6 @@ Cpp11BracedListStyle: "false"
 FixNamespaceComments: "true"
 IncludeBlocks: Preserve
 IndentWidth: "4"
-InsertBraces: "true"
 MaxEmptyLinesToKeep: "2"
 NamespaceIndentation: None
 PointerAlignment: Left

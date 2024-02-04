@@ -21,13 +21,13 @@
 #include <QObject>
 #include <QVariantMap>
 
-namespace Calamares
+namespace CalamaresUtils
 {
 namespace GeoIP
 {
 class Handler;
-}  // namespace GeoIP
-}  // namespace Calamares
+}
+}  // namespace CalamaresUtils
 
 
 // TODO: refactor and move what makes sense to base class
@@ -56,7 +56,7 @@ public:
      * the given 2-letter country code. Uses the handler's information (if
      * given) for error reporting.
      */
-    void setCountry( const QString&, Calamares::GeoIP::Handler* handler );
+    void setCountry( const QString&, CalamaresUtils::GeoIP::Handler* handler );
 
     Calamares::RequirementsList checkRequirements() override;
     QObject* getConfig() override;

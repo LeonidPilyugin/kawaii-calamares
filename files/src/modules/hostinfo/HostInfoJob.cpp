@@ -11,14 +11,16 @@
 
 #include "GlobalStorage.h"
 #include "JobQueue.h"
+#include "utils/CalamaresUtilsSystem.h"
 #include "utils/Logger.h"
-#include "utils/System.h"
 #include "utils/Units.h"
 
 #include <QDir>
 #include <QFile>
 
+#ifdef WITH_KOSRelease
 #include <KOSRelease>
+#endif
 
 #ifdef Q_OS_FREEBSD
 #include <sys/types.h>
@@ -33,10 +35,11 @@ HostInfoJob::HostInfoJob( QObject* parent )
 
 HostInfoJob::~HostInfoJob() {}
 
+
 QString
 HostInfoJob::prettyName() const
 {
-    return tr( "Collecting information about your machine…", "@status" );
+    return tr( "Collecting information about your machine." );
 }
 
 QString
@@ -54,11 +57,13 @@ hostOS()
 QString
 hostOSName()
 {
+#ifdef WITH_KOSRelease
     KOSRelease r;
     if ( !r.name().isEmpty() )
     {
         return r.name();
     }
+#endif
     return hostOS();
 }
 
@@ -167,6 +172,7 @@ hostCPU()
 #endif
 }
 
+
 Calamares::JobResult
 HostInfoJob::exec()
 {
@@ -178,7 +184,7 @@ HostInfoJob::exec()
     gs->insert( "hostCPU", hostCPU() );
 
     // Memory can't be negative, so it's reported as unsigned long.
-    auto ram = Calamares::BytesToMiB( qint64( Calamares::System::instance()->getTotalMemoryB().first ) );
+    auto ram = CalamaresUtils::BytesToMiB( qint64( CalamaresUtils::System::instance()->getTotalMemoryB().first ) );
     if ( ram )
     {
         gs->insert( "hostRAMMiB", ram );

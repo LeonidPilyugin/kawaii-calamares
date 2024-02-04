@@ -52,10 +52,10 @@ PackagesTests::testEmpty()
     QCOMPARE( k.toString(), "this@that" );
 
     // Adding nothing at all does nothing
-    QVERIFY( !Calamares::Packages::setGSPackageAdditions( &gs, k, QVariantList(), QVariantList() ) );
+    QVERIFY( !CalamaresUtils::Packages::setGSPackageAdditions( &gs, k, QVariantList(), QVariantList() ) );
     QVERIFY( !gs.contains( topKey ) );
 
-    QVERIFY( !Calamares::Packages::setGSPackageAdditions( &gs, k, QStringList() ) );
+    QVERIFY( !CalamaresUtils::Packages::setGSPackageAdditions( &gs, k, QStringList() ) );
     QVERIFY( !gs.contains( topKey ) );
 }
 
@@ -88,7 +88,8 @@ PackagesTests::testAdd()
 
     {
         QVERIFY( !gs.contains( topKey ) );
-        QVERIFY( Calamares::Packages::setGSPackageAdditions( &gs, k, QVariant( packages ).toList(), QVariantList() ) );
+        QVERIFY(
+            CalamaresUtils::Packages::setGSPackageAdditions( &gs, k, QVariant( packages ).toList(), QVariantList() ) );
         QVERIFY( gs.contains( topKey ) );
         auto actionList = gs.value( topKey ).toList();
         QCOMPARE( actionList.length(), 1 );
@@ -103,7 +104,7 @@ PackagesTests::testAdd()
         cDebug() << op;
     }
     {
-        QVERIFY( Calamares::Packages::setGSPackageAdditions( &gs, otherInstance, packages ) );
+        QVERIFY( CalamaresUtils::Packages::setGSPackageAdditions( &gs, otherInstance, packages ) );
         QVERIFY( gs.contains( topKey ) );
         auto actionList = gs.value( topKey ).toList();
         QCOMPARE( actionList.length(), 2 );  // One for each instance key!
@@ -117,7 +118,7 @@ PackagesTests::testAdd()
     {
         // Replace one and expect differences
         packages << extraEditor;
-        QVERIFY( Calamares::Packages::setGSPackageAdditions( &gs, otherInstance, packages ) );
+        QVERIFY( CalamaresUtils::Packages::setGSPackageAdditions( &gs, otherInstance, packages ) );
         QVERIFY( gs.contains( topKey ) );
         auto actionList = gs.value( topKey ).toList();
         QCOMPARE( actionList.length(), 2 );  // One for each instance key!
@@ -159,8 +160,8 @@ PackagesTests::testAddMixed()
     // Just one
     {
         QVERIFY( !gs.contains( topKey ) );
-        QVERIFY(
-            Calamares::Packages::setGSPackageAdditions( &gs, k, QVariantList { QString( "vim" ) }, QVariantList() ) );
+        QVERIFY( CalamaresUtils::Packages::setGSPackageAdditions(
+            &gs, k, QVariantList { QString( "vim" ) }, QVariantList() ) );
         QVERIFY( gs.contains( topKey ) );
         auto actionList = gs.value( topKey ).toList();
         QCOMPARE( actionList.length(), 1 );
@@ -174,7 +175,7 @@ PackagesTests::testAddMixed()
 
     // Replace with two packages
     {
-        QVERIFY( Calamares::Packages::setGSPackageAdditions(
+        QVERIFY( CalamaresUtils::Packages::setGSPackageAdditions(
             &gs, k, QVariantList { QString( "vim" ), QString( "emacs" ) }, QVariantList() ) );
         QVERIFY( gs.contains( topKey ) );
         auto actionList = gs.value( topKey ).toList();
@@ -191,8 +192,8 @@ PackagesTests::testAddMixed()
 
     // Replace with one (different) package
     {
-        QVERIFY(
-            Calamares::Packages::setGSPackageAdditions( &gs, k, QVariantList { QString( "nano" ) }, QVariantList() ) );
+        QVERIFY( CalamaresUtils::Packages::setGSPackageAdditions(
+            &gs, k, QVariantList { QString( "nano" ) }, QVariantList() ) );
         QVERIFY( gs.contains( topKey ) );
         auto actionList = gs.value( topKey ).toList();
         QCOMPARE( actionList.length(), 1 );
@@ -207,7 +208,7 @@ PackagesTests::testAddMixed()
 
     // Now we have two sources
     {
-        QVERIFY( Calamares::Packages::setGSPackageAdditions( &gs, otherInstance, QStringList( extraEditor ) ) );
+        QVERIFY( CalamaresUtils::Packages::setGSPackageAdditions( &gs, otherInstance, QStringList( extraEditor ) ) );
         QVERIFY( gs.contains( topKey ) );
         auto actionList = gs.value( topKey ).toList();
         QCOMPARE( actionList.length(), 2 );

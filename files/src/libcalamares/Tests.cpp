@@ -12,7 +12,6 @@
 #include "GlobalStorage.h"
 #include "JobQueue.h"
 #include "Settings.h"
-#include "compat/Variant.h"
 #include "modulesystem/InstanceKey.h"
 #include "utils/Logger.h"
 
@@ -56,7 +55,7 @@ TestLibCalamares::testGSModify()
     gs.insert( key, value );
     QCOMPARE( gs.count(), 1 );
     QVERIFY( gs.contains( key ) );
-    QCOMPARE( Calamares::typeOf( gs.value( key ) ), Calamares::IntVariantType );
+    QCOMPARE( gs.value( key ).type(), QVariant::Int );
     QCOMPARE( gs.value( key ).toString(), QString( "17" ) );  // It isn't a string, but does convert
     QCOMPARE( gs.value( key ).toInt(), value );
 
@@ -138,8 +137,8 @@ TestLibCalamares::testGSLoadSave2()
     QVERIFY( gs1.loadYaml( filename ) );
     QCOMPARE( gs1.count(), 3 );  // From examining the file
     QVERIFY( gs1.contains( key ) );
-    cDebug() << Calamares::typeOf( gs1.value( key ) ) << gs1.value( key );
-    QCOMPARE( Calamares::typeOf( gs1.value( key ) ), Calamares::ListVariantType );
+    cDebug() << gs1.value( key ).type() << gs1.value( key );
+    QCOMPARE( gs1.value( key ).type(), QVariant::List );
 
     const QString yamlfilename( "gs.test.yaml" );
     QVERIFY( gs1.saveYaml( yamlfilename ) );
@@ -147,7 +146,7 @@ TestLibCalamares::testGSLoadSave2()
     Calamares::GlobalStorage gs2;
     QVERIFY( gs2.loadYaml( yamlfilename ) );
     QVERIFY( gs2.contains( key ) );
-    QCOMPARE( Calamares::typeOf( gs2.value( key ) ), Calamares::ListVariantType );
+    QCOMPARE( gs2.value( key ).type(), QVariant::List );
 }
 
 void
@@ -397,7 +396,6 @@ TestLibCalamares::testSettings()
         QVERIFY( s.brandingComponentName().isEmpty() );
         QVERIFY( !s.isValid() );
 
-        // *INDENT-OFF*
         s.setConfiguration( R"(---
 branding: default  # needed for it to be considered valid
 instances:
@@ -417,7 +415,6 @@ sequence:
         - welcome@hi
 )",
                             QStringLiteral( "<testdata>" ) );
-        // *INDENT-ON*
 
         QVERIFY( s.debugMode() );
         QCOMPARE( s.moduleInstances().count(), 4 );  // there are 4 module instances mentioned

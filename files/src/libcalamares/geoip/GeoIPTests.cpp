@@ -22,7 +22,7 @@
 
 QTEST_GUILESS_MAIN( GeoIPTests )
 
-using namespace Calamares::GeoIP;
+using namespace CalamaresUtils::GeoIP;
 
 GeoIPTests::GeoIPTests() {}
 
@@ -86,6 +86,7 @@ GeoIPTests::testJSONbad()
     QCOMPARE( tz.first, QString() );
 }
 
+
 static const char xml_data_ubiquity[] =
     R"(<Response>
   <Ip>85.150.1.1</Ip>
@@ -118,10 +119,10 @@ GeoIPTests::testXML()
 void
 GeoIPTests::testXML2()
 {
-#ifdef QT_XML_LIB
     static const char data[]
         = "<Response><TimeZone>America/North Dakota/Beulah</TimeZone></Response>";  // With a space!
 
+#ifdef QT_XML_LIB
     GeoIPXML handler;
     auto tz = handler.processReply( data );
 
@@ -129,6 +130,7 @@ GeoIPTests::testXML2()
     QCOMPARE( tz.second, QStringLiteral( "North_Dakota/Beulah" ) );  // Without space
 #endif
 }
+
 
 void
 GeoIPTests::testXMLalt()
@@ -161,7 +163,7 @@ GeoIPTests::testXMLbad()
 void
 GeoIPTests::testSplitTZ()
 {
-    using namespace Calamares::GeoIP;
+    using namespace CalamaresUtils::GeoIP;
     auto tz = splitTZString( QStringLiteral( "Moon/Dark_side" ) );
     QCOMPARE( tz.first, QStringLiteral( "Moon" ) );
     QCOMPARE( tz.second, QStringLiteral( "Dark_side" ) );
@@ -184,12 +186,14 @@ GeoIPTests::testSplitTZ()
     QCOMPARE( tz.second, QStringLiteral( "North_Dakota/Beulah" ) );
 }
 
+
 #define CHECK_GET( t, selector, url ) \
     { \
-        auto tz = GeoIP##t( selector ).processReply( Calamares::Network::Manager().synchronousGet( QUrl( url ) ) ); \
+        auto tz = GeoIP##t( selector ) \
+                      .processReply( CalamaresUtils::Network::Manager::instance().synchronousGet( QUrl( url ) ) ); \
         qDebug() << tz; \
         QCOMPARE( default_tz, tz ); \
-        auto tz2 = Calamares::GeoIP::Handler( "" #t, url, selector ).get(); \
+        auto tz2 = CalamaresUtils::GeoIP::Handler( "" #t, url, selector ).get(); \
         qDebug() << tz2; \
         QCOMPARE( default_tz, tz2 ); \
     }
@@ -206,7 +210,7 @@ GeoIPTests::testGet()
     GeoIPJSON default_handler;
     // Call the KDE service the definitive source.
     auto default_tz = default_handler.processReply(
-        Calamares::Network::Manager().synchronousGet( QUrl( "https://geoip.kde.org/v1/calamares" ) ) );
+        CalamaresUtils::Network::Manager::instance().synchronousGet( QUrl( "https://geoip.kde.org/v1/calamares" ) ) );
 
     // This is bogus, because the test isn't always run by me
     // QCOMPARE( default_tz.first, QStringLiteral("Europe") );

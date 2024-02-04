@@ -19,7 +19,7 @@
 
 class QQuickItem;
 
-namespace Calamares
+namespace CalamaresUtils
 {
 /// @brief the extra directory where Calamares searches for QML files
 UIDLLEXPORT QDir qmlModulesDir();
@@ -85,6 +85,6 @@ UIDLLEXPORT QString searchQmlFile( QmlSearch method,
                                    const Calamares::ModuleSystem::InstanceKey& i );
 UIDLLEXPORT QString searchQmlFile( QmlSearch method, const QString& fileNameNoSuffix );
 
-}  // namespace Calamares
+}  // namespace CalamaresUtils
 
 #endif

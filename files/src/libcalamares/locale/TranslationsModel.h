@@ -18,7 +18,8 @@
 #include <QAbstractListModel>
 #include <QVector>
 
-namespace Calamares
+
+namespace CalamaresUtils
 {
 namespace Locale
 {
@@ -73,22 +74,14 @@ private:
 /** @brief Returns a model with all available translations.
  *
  * The translations are set when Calamares is compiled; the list
- * of names used can be queried with avalableLanguages().
+ * is provided by CMake via the CALAMARES_TRANSLATION_LANGUAGES
+ * #define.
  *
  * This model is a singleton and can be shared.
  *
  * NOTE: While the model is not typed const, it should be. Do not modify.
  */
 DLLEXPORT TranslationsModel* availableTranslations();
-
-/** @brief The list of names (e.g. en, pt_BR) of available translations.
- *
- * The translations are set when Calamares is compiled.
- * At CMake-time, the list CALAMARES_TRANSLATION_LANGUAGES
- * is used to create the table.
- */
-DLLEXPORT const QStringList& availableLanguages();
-
 }  // namespace Locale
-}  // namespace Calamares
+}  // namespace CalamaresUtils
 #endif

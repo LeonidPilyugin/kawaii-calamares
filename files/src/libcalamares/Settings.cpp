@@ -14,7 +14,6 @@
 #include "Settings.h"
 
 #include "CalamaresConfig.h"
-#include "compat/Variant.h"
 #include "utils/Dirs.h"
 #include "utils/Logger.h"
 #include "utils/Yaml.h"
@@ -31,7 +30,7 @@ hasValue( const YAML::Node& v )
 
 /** @brief Helper function to grab a QString out of the config, and to warn if not present. */
 static QString
-requireString( const ::YAML::Node& config, const char* key )
+requireString( const YAML::Node& config, const char* key )
 {
     auto v = config[ key ];
     if ( hasValue( v ) )
@@ -47,7 +46,7 @@ requireString( const ::YAML::Node& config, const char* key )
 
 /** @brief Helper function to grab a bool out of the config, and to warn if not present. */
 static bool
-requireBool( const ::YAML::Node& config, const char* key, bool d )
+requireBool( const YAML::Node& config, const char* key, bool d )
 {
     auto v = config[ key ];
     if ( hasValue( v ) )
@@ -133,7 +132,7 @@ interpretModulesSearch( const bool debugMode, const QStringList& rawPaths, QStri
             }
 
             // Install path is set in CalamaresAddPlugin.cmake
-            output.append( Calamares::systemLibDir().absolutePath() + QDir::separator() + "calamares"
+            output.append( CalamaresUtils::systemLibDir().absolutePath() + QDir::separator() + "calamares"
                            + QDir::separator() + "modules" );
         }
         else
@@ -152,18 +151,18 @@ interpretModulesSearch( const bool debugMode, const QStringList& rawPaths, QStri
 }
 
 static void
-interpretInstances( const ::YAML::Node& node, Settings::InstanceDescriptionList& customInstances )
+interpretInstances( const YAML::Node& node, Settings::InstanceDescriptionList& customInstances )
 {
     // Parse the custom instances section
     if ( node )
     {
-        QVariant instancesV = Calamares::YAML::toVariant( node ).toList();
-        if ( typeOf( instancesV ) == ListVariantType )
+        QVariant instancesV = CalamaresUtils::yamlToVariant( node ).toList();
+        if ( instancesV.type() == QVariant::List )
         {
             const auto instances = instancesV.toList();
             for ( const QVariant& instancesVListItem : instances )
             {
-                if ( typeOf( instancesVListItem ) != MapVariantType )
+                if ( instancesVListItem.type() != QVariant::Map )
                 {
                     continue;
                 }
@@ -180,21 +179,21 @@ interpretInstances( const ::YAML::Node& node, Settings::InstanceDescriptionList&
 }
 
 static void
-interpretSequence( const ::YAML::Node& node, Settings::ModuleSequence& moduleSequence )
+interpretSequence( const YAML::Node& node, Settings::ModuleSequence& moduleSequence )
 {
     // Parse the modules sequence section
     if ( node )
     {
-        QVariant sequenceV = Calamares::YAML::toVariant( node );
-        if ( typeOf( sequenceV ) != ListVariantType )
+        QVariant sequenceV = CalamaresUtils::yamlToVariant( node );
+        if ( !( sequenceV.type() == QVariant::List ) )
         {
-            throw ::YAML::Exception( ::YAML::Mark(), "sequence key does not have a list-value" );
+            throw YAML::Exception( YAML::Mark(), "sequence key does not have a list-value" );
         }
 
         const auto sequence = sequenceV.toList();
         for ( const QVariant& sequenceVListItem : sequence )
         {
-            if ( typeOf( sequenceVListItem ) != MapVariantType )
+            if ( sequenceVListItem.type() != QVariant::Map )
             {
                 continue;
             }
@@ -231,7 +230,7 @@ interpretSequence( const ::YAML::Node& node, Settings::ModuleSequence& moduleSeq
     }
     else
     {
-        throw ::YAML::Exception( ::YAML::Mark(), "sequence key is missing" );
+        throw YAML::Exception( YAML::Mark(), "sequence key is missing" );
     }
 }
 
@@ -250,7 +249,6 @@ Settings::Settings( bool debugMode )
 
 Settings::Settings( const QString& settingsFilePath, bool debugMode )
     : QObject()
-    , m_settingsPath( settingsFilePath )
     , m_debug( debugMode )
     , m_doChroot( true )
     , m_promptInstall( false )
@@ -318,12 +316,11 @@ Settings::setConfiguration( const QByteArray& ba, const QString& explainName )
 {
     try
     {
-        // Not using Calamares::YAML:: convenience methods because we **want** the exception here
-        auto config = ::YAML::Load( ba.constData() );
+        YAML::Node config = YAML::Load( ba.constData() );
         Q_ASSERT( config.IsMap() );
 
         interpretModulesSearch(
-            debugMode(), Calamares::YAML::toStringList( config[ "modules-search" ] ), m_modulesSearchPaths );
+            debugMode(), CalamaresUtils::yamlToStringList( config[ "modules-search" ] ), m_modulesSearchPaths );
         interpretInstances( config[ "instances" ], m_moduleInstances );
         interpretSequence( config[ "sequence" ], m_modulesSequence );
 
@@ -338,9 +335,9 @@ Settings::setConfiguration( const QByteArray& ba, const QString& explainName )
 
         reconcileInstancesAndSequence();
     }
-    catch ( ::YAML::Exception& e )
+    catch ( YAML::Exception& e )
     {
-        Calamares::YAML::explainException( e, ba, explainName );
+        CalamaresUtils::explainYamlException( e, ba, explainName );
     }
 }
 
@@ -350,17 +347,20 @@ Settings::modulesSearchPaths() const
     return m_modulesSearchPaths;
 }
 
+
 Settings::InstanceDescriptionList
 Settings::moduleInstances() const
 {
     return m_moduleInstances;
 }
 
+
 Settings::ModuleSequence
 Settings::modulesSequence() const
 {
     return m_modulesSequence;
 }
+
 
 QString
 Settings::brandingComponentName() const
@@ -374,9 +374,9 @@ settingsFileCandidates( bool assumeBuilddir )
     static const char settings[] = "settings.conf";
 
     QStringList settingsPaths;
-    if ( Calamares::isAppDataDirOverridden() )
+    if ( CalamaresUtils::isAppDataDirOverridden() )
     {
-        settingsPaths << Calamares::appDataDir().absoluteFilePath( settings );
+        settingsPaths << CalamaresUtils::appDataDir().absoluteFilePath( settings );
     }
     else
     {
@@ -384,15 +384,13 @@ settingsFileCandidates( bool assumeBuilddir )
         {
             settingsPaths << QDir::current().absoluteFilePath( settings );
         }
-        if ( Calamares::haveExtraDirs() )
-        {
-            for ( auto s : Calamares::extraConfigDirs() )
+        if ( CalamaresUtils::haveExtraDirs() )
+            for ( auto s : CalamaresUtils::extraConfigDirs() )
             {
                 settingsPaths << ( s + settings );
             }
-        }
         settingsPaths << CMAKE_INSTALL_FULL_SYSCONFDIR "/calamares/settings.conf";  // String concat
-        settingsPaths << Calamares::appDataDir().absoluteFilePath( settings );
+        settingsPaths << CalamaresUtils::appDataDir().absoluteFilePath( settings );
     }
 
     return settingsPaths;
@@ -427,7 +425,7 @@ Settings::init( bool debugMode )
     {
         cError() << "Cowardly refusing to continue startup without settings."
                  << Logger::DebugList( settingsFileCandidatesByPriority );
-        if ( Calamares::isAppDataDirOverridden() )
+        if ( CalamaresUtils::isAppDataDirOverridden() )
         {
             cError() << "FATAL: explicitly configured application data directory is missing settings.conf";
         }

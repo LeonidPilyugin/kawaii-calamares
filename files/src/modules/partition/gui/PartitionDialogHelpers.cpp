@@ -88,12 +88,12 @@ validateMountPoint( const QString& mountPoint, const QStringList& inUse, QLabel*
 
     if ( inUse.contains( mountPoint ) )
     {
-        msg = CreatePartitionDialog::tr( "Mountpoint already in use. Please select another one.", "@info" );
+        msg = CreatePartitionDialog::tr( "Mountpoint already in use. Please select another one." );
         ok = false;
     }
     else if ( !mountPoint.isEmpty() && !mountPoint.startsWith( '/' ) )
     {
-        msg = CreatePartitionDialog::tr( "Mountpoint must start with a <tt>/</tt>.", "@info" );
+        msg = CreatePartitionDialog::tr( "Mountpoint must start with a <tt>/</tt>." );
         ok = false;
     }
 

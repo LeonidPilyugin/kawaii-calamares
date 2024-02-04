@@ -86,11 +86,12 @@ TrackingStyleConfig::validateUrl( QString& urlString )
     }
 }
 
+
 void
 TrackingStyleConfig::setConfigurationMap( const QVariantMap& config )
 {
-    m_state = Calamares::getBool( config, "enabled", false ) ? DisabledByUser : DisabledByConfig;
-    m_policy = Calamares::getString( config, "policy" );
+    m_state = CalamaresUtils::getBool( config, "enabled", false ) ? DisabledByUser : DisabledByConfig;
+    m_policy = CalamaresUtils::getString( config, "policy" );
     validateUrl( m_policy );
     emit policyChanged( m_policy );
     emit trackingChanged();
@@ -109,7 +110,7 @@ InstallTrackingConfig::setConfigurationMap( const QVariantMap& configurationMap 
 {
     TrackingStyleConfig::setConfigurationMap( configurationMap );
 
-    m_installTrackingUrl = Calamares::getString( configurationMap, "url" );
+    m_installTrackingUrl = CalamaresUtils::getString( configurationMap, "url" );
     validateUrl( m_installTrackingUrl );
 }
 
@@ -134,9 +135,10 @@ MachineTrackingConfig::setConfigurationMap( const QVariantMap& configurationMap 
 {
     TrackingStyleConfig::setConfigurationMap( configurationMap );
 
-    m_machineTrackingStyle = Calamares::getString( configurationMap, "style" );
+    m_machineTrackingStyle = CalamaresUtils::getString( configurationMap, "style" );
     validate( m_machineTrackingStyle, isValidMachineTrackingStyle );
 }
+
 
 UserTrackingConfig::UserTrackingConfig( QObject* parent )
     : TrackingStyleConfig( parent )
@@ -158,11 +160,12 @@ UserTrackingConfig::setConfigurationMap( const QVariantMap& configurationMap )
 {
     TrackingStyleConfig::setConfigurationMap( configurationMap );
 
-    m_userTrackingStyle = Calamares::getString( configurationMap, "style" );
+    m_userTrackingStyle = CalamaresUtils::getString( configurationMap, "style" );
     validate( m_userTrackingStyle, isValidUserTrackingStyle );
 
-    m_userTrackingAreas = Calamares::getStringList( configurationMap, "areas" );
+    m_userTrackingAreas = CalamaresUtils::getStringList( configurationMap, "areas" );
 }
+
 
 Config::Config( QObject* parent )
     : QObject( parent )
@@ -195,7 +198,7 @@ enableLevelsBelow( Config* config, TrackingType level )
 void
 Config::setConfigurationMap( const QVariantMap& configurationMap )
 {
-    m_generalPolicy = Calamares::getString( configurationMap, "policy" );
+    m_generalPolicy = CalamaresUtils::getString( configurationMap, "policy" );
 
     if ( !QUrl( m_generalPolicy ).isValid() )
     {
@@ -204,28 +207,28 @@ Config::setConfigurationMap( const QVariantMap& configurationMap )
     emit generalPolicyChanged( m_generalPolicy );
 
     bool success = false;
-    auto subconfig = Calamares::getSubMap( configurationMap, "install", success );
+    auto subconfig = CalamaresUtils::getSubMap( configurationMap, "install", success );
     if ( success )
     {
         m_installTracking->setConfigurationMap( subconfig );
     }
 
-    subconfig = Calamares::getSubMap( configurationMap, "machine", success );
+    subconfig = CalamaresUtils::getSubMap( configurationMap, "machine", success );
     if ( success )
     {
         m_machineTracking->setConfigurationMap( subconfig );
     }
 
-    subconfig = Calamares::getSubMap( configurationMap, "user", success );
+    subconfig = CalamaresUtils::getSubMap( configurationMap, "user", success );
     if ( success )
     {
         m_userTracking->setConfigurationMap( subconfig );
     }
 
-    auto level = trackingNames().find( Calamares::getString( configurationMap, "default" ), success );
+    auto level = trackingNames().find( CalamaresUtils::getString( configurationMap, "default" ), success );
     if ( !success )
     {
-        cWarning() << "Default tracking level unknown:" << Calamares::getString( configurationMap, "default" );
+        cWarning() << "Default tracking level unknown:" << CalamaresUtils::getString( configurationMap, "default" );
         level = TrackingType::NoTracking;
     }
     enableLevelsBelow( this, level );
