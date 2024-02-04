@@ -12,7 +12,7 @@ depends=(
 	'gtk-update-icon-cache'
 	'hwinfo'
 	'icu'
-	'kpmcore>=24.01.75'
+	'kpmcore'
 	'libpwquality'
 	'mkinitcpio-openswap'
 	'squashfs-tools'
@@ -28,7 +28,7 @@ license=(
 	'MIT'
 	)
 source=("$pkgname-$pkgver.tar.gz::https://github.com/LeonidPilyugin/$pkgname/releases/download/v$pkgver/files.tar.gz")
-sha256sums=('96e33dbf0a40f5dcb5f907a35cd9ff32670cec6f37d45a9e59e5a056a289125f')
+sha256sums=('027b4f9d80ab7ac5c87c61f775e1c1bef14a0e08601e938ecf6fc1d649c90f1d')
 
 prepare() {
     cd ${srcdir}/files
