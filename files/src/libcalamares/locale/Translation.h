@@ -18,7 +18,7 @@
 #include <QObject>
 #include <QString>
 
-namespace CalamaresUtils
+namespace Calamares
 {
 namespace Locale
 {
@@ -36,7 +36,7 @@ namespace Locale
  * - `ca@valencia` is the Catalan dialect spoken in Valencia.
  *   There is no Qt code for it.
  */
-class Translation : public QObject
+class DLLEXPORT Translation : public QObject
 {
     Q_OBJECT
 
@@ -63,7 +63,6 @@ public:
      * in the label (human-readable form) or only if needed for disambiguation.
      */
     Translation( const Id& localeId, LabelFormat format = LabelFormat::IfNeededWithCountry, QObject* parent = nullptr );
-
 
     /** @brief Define a sorting order.
      *
@@ -124,6 +123,6 @@ operator==( const Translation::Id& lhs, const Translation::Id& rhs )
 }
 
 }  // namespace Locale
-}  // namespace CalamaresUtils
+}  // namespace Calamares
 
 #endif

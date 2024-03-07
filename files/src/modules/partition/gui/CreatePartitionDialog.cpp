@@ -33,6 +33,7 @@
 #include <kpmcore/fs/filesystem.h>
 #include <kpmcore/fs/filesystemfactory.h>
 #include <kpmcore/fs/luks.h>
+#include <kpmcore/fs/luks2.h>
 
 #include <QComboBox>
 #include <QDir>
@@ -42,8 +43,8 @@
 #include <QRegularExpressionValidator>
 #include <QSet>
 
-using CalamaresUtils::Partition::untranslatedFS;
-using CalamaresUtils::Partition::userVisibleFS;
+using Calamares::Partition::untranslatedFS;
+using Calamares::Partition::userVisibleFS;
 
 static QSet< FileSystem::Type > s_unmountableFS( { FileSystem::Unformatted,
                                                    FileSystem::LinuxSwap,
@@ -63,7 +64,7 @@ CreatePartitionDialog::CreatePartitionDialog( Device* device,
     , m_usedMountPoints( usedMountPoints )
 {
     m_ui->setupUi( this );
-    m_ui->encryptWidget->setText( tr( "En&crypt" ) );
+    m_ui->encryptWidget->setText( tr( "En&crypt", "@action" ) );
     m_ui->encryptWidget->hide();
 
     if ( m_device->type() != Device::Type::LVM_Device )
@@ -191,12 +192,12 @@ CreatePartitionDialog::initMbrPartitionTypeUi()
     if ( !parentIsPartitionTable )
     {
         m_role = PartitionRole( PartitionRole::Logical );
-        fixedPartitionString = tr( "Logical" );
+        fixedPartitionString = tr( "Logical", "@label" );
     }
     else if ( m_device->partitionTable()->hasExtended() )
     {
         m_role = PartitionRole( PartitionRole::Primary );
-        fixedPartitionString = tr( "Primary" );
+        fixedPartitionString = tr( "Primary", "@label" );
     }
 
     if ( fixedPartitionString.isEmpty() )
@@ -215,7 +216,7 @@ void
 CreatePartitionDialog::initGptPartitionTypeUi()
 {
     m_role = PartitionRole( PartitionRole::Primary );
-    m_ui->fixedPartitionLabel->setText( tr( "GPT" ) );
+    m_ui->fixedPartitionLabel->setText( tr( "GPT", "@label" ) );
     m_ui->primaryRadioButton->hide();
     m_ui->extendedRadioButton->hide();
 }
@@ -223,6 +224,8 @@ CreatePartitionDialog::initGptPartitionTypeUi()
 Partition*
 CreatePartitionDialog::getNewlyCreatedPartition()
 {
+    Calamares::GlobalStorage* gs = Calamares::JobQueue::instance()->globalStorage();
+
     if ( m_role.roles() == PartitionRole::None )
     {
         m_role = PartitionRole( m_ui->extendedRadioButton->isChecked() ? PartitionRole::Extended
@@ -242,12 +245,22 @@ CreatePartitionDialog::getNewlyCreatedPartition()
     // newFlags() and the consumer (see PartitionPage::onCreateClicked)
     // does so, to set up the partition for create-and-then-set-flags.
     Partition* partition = nullptr;
+    QString luksFsType = gs->value( "luksFileSystemType" ).toString();
     QString luksPassphrase = m_ui->encryptWidget->passphrase();
     if ( m_ui->encryptWidget->state() == EncryptWidget::Encryption::Confirmed && !luksPassphrase.isEmpty()
          && fsType != FileSystem::Zfs )
     {
         partition = KPMHelpers::createNewEncryptedPartition(
-            m_parent, *m_device, m_role, fsType, fsLabel, first, last, luksPassphrase, PartitionTable::Flags() );
+            m_parent,
+            *m_device,
+            m_role,
+            fsType,
+            fsLabel,
+            first,
+            last,
+            Config::luksGenerationNames().find( luksFsType, Config::LuksGeneration::Luks1 ),
+            luksPassphrase,
+            PartitionTable::Flags() );
     }
     else
     {
@@ -308,6 +321,12 @@ CreatePartitionDialog::updateMountPointUi()
             m_ui->encryptWidget->show();
             m_ui->encryptWidget->reset();
         }
+        else if ( FileSystemFactory::map()[ FileSystem::Type::Luks2 ]->supportCreate()
+                  && FS::luks2::canEncryptType( type ) && !m_role.has( PartitionRole::Extended ) )
+        {
+            m_ui->encryptWidget->show();
+            m_ui->encryptWidget->reset();
+        }
         else
         {
             m_ui->encryptWidget->reset();
@@ -334,7 +353,7 @@ CreatePartitionDialog::checkMountPointSelection()
 void
 CreatePartitionDialog::initPartResizerWidget( Partition* partition )
 {
-    QColor color = CalamaresUtils::Partition::isPartitionFreeSpace( partition )
+    QColor color = Calamares::Partition::isPartitionFreeSpace( partition )
         ? ColorUtils::colorForPartitionInFreeSpace( partition )
         : ColorUtils::colorForPartition( partition );
     m_partitionSizeController->init( m_device, partition, color );

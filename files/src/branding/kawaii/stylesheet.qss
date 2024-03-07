@@ -124,7 +124,7 @@ QPushButton {
 QPushButton:hover {
     background-color: #b05cd0;
     color: #220a3e;
-    //box-shadow: 0 0 0 3px #B05CD0;
+    box-shadow: 0 0 0 3px #B05CD0;
 }
 
 QLabel {
@@ -227,5 +227,3 @@ QScrollBar::handle {
     color: #220a3e;
     background-color: #f5dff0;
 }*/
-
-

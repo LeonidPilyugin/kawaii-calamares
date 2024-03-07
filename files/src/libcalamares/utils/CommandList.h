@@ -11,45 +11,80 @@
 #ifndef UTILS_COMMANDLIST_H
 #define UTILS_COMMANDLIST_H
 
+#include "DllMacro.h"
 #include "Job.h"
 
 #include <QStringList>
 #include <QVariant>
 
 #include <chrono>
+#include <utility>
 
-namespace CalamaresUtils
+class KMacroExpanderBase;
+
+namespace Calamares
 {
-
 /**
  * Each command can have an associated timeout in seconds. The timeout
  * defaults to 10 seconds. Provide some convenience naming and construction.
  */
-struct CommandLine : public QPair< QString, std::chrono::seconds >
+class CommandLine
 {
+public:
     static inline constexpr std::chrono::seconds TimeoutNotSet() { return std::chrono::seconds( -1 ); }
 
     /// An invalid command line
-    CommandLine()
-        : QPair( QString(), TimeoutNotSet() )
-    {
-    }
+    CommandLine() = default;
 
     CommandLine( const QString& s )
-        : QPair( s, TimeoutNotSet() )
+        : m_command( s )
     {
     }
 
     CommandLine( const QString& s, std::chrono::seconds t )
-        : QPair( s, t )
+        : m_command( s )
+        , m_timeout( t )
     {
     }
 
-    QString command() const { return first; }
+    CommandLine( const QString& s, const QStringList& env, std::chrono::seconds t )
+        : m_command( s )
+        , m_environment( env )
+        , m_timeout( t )
+    {
+    }
 
-    std::chrono::seconds timeout() const { return second; }
+    /** @brief Constructs a CommandLine from a map with keys
+     *
+     * Relevant keys are *command*, *environment* and *timeout*.
+     */
+    CommandLine( const QVariantMap& m );
 
-    bool isValid() const { return !first.isEmpty(); }
+    QString command() const { return m_command; }
+    [[nodiscard]] QStringList environment() const { return m_environment; }
+    std::chrono::seconds timeout() const { return m_timeout; }
+
+    bool isValid() const { return !m_command.isEmpty(); }
+
+    /** @brief Returns a copy of this one command, with variables expanded
+     *
+     * The given macro-expander is used to expand the command-line.
+     * This will normally be a Calamares::String::DictionaryExpander
+     * instance, which handles the ROOT and USER variables.
+     */
+    DLLEXPORT CommandLine expand( KMacroExpanderBase& expander ) const;
+
+    /** @brief As above, with a default macro-expander.
+     *
+     * The default macro-expander assumes RunInHost (e.g. ROOT will
+     * expand to the RootMountPoint set in Global Storage).
+     */
+    DLLEXPORT CommandLine expand() const;
+
+private:
+    QString m_command;
+    QStringList m_environment;
+    std::chrono::seconds m_timeout = TimeoutNotSet();
 };
 
 /** @brief Abbreviation, used internally. */
@@ -63,15 +98,15 @@ using CommandList_t = QList< CommandLine >;
  * Documentation for the format of commands can be found in
  * `shellprocess.conf`.
  */
-class CommandList : protected CommandList_t
+class DLLEXPORT CommandList : protected CommandList_t
 {
 public:
     /** @brief empty command-list with timeout to apply to entries. */
     CommandList( bool doChroot = true, std::chrono::seconds timeout = std::chrono::seconds( 10 ) );
     CommandList( const QVariant& v, bool doChroot = true, std::chrono::seconds timeout = std::chrono::seconds( 10 ) );
-    ~CommandList();
 
     bool doChroot() const { return m_doChroot; }
+    std::chrono::seconds defaultTimeout() const { return m_timeout; }
 
     Calamares::JobResult run();
 
@@ -81,15 +116,27 @@ public:
     using CommandList_t::const_iterator;
     using CommandList_t::count;
     using CommandList_t::isEmpty;
+    using CommandList_t::push_back;
+    using CommandList_t::value_type;
 
-protected:
-    using CommandList_t::append;
-    void append( const QString& );
+    /** @brief Return a copy of this command-list, with variables expanded
+     *
+     * Each command-line in the list is expanded with the given @p expander.
+     * @see CommandLine::expand() for details.
+     */
+    CommandList expand( KMacroExpanderBase& expander ) const;
+
+    /** @brief As above, with a default macro-expander.
+     *
+     * Each command-line in the list is expanded with that default macro-expander.
+     * @see CommandLine::expand() for details.
+     */
+    CommandList expand() const;
 
 private:
     bool m_doChroot;
     std::chrono::seconds m_timeout;
 };
 
-}  // namespace CalamaresUtils
+}  // namespace Calamares
 #endif
