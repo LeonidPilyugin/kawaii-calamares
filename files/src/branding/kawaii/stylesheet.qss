@@ -151,12 +151,18 @@ QGroupBox {
     color: #220a3e;
     background-color: #f7d7e9;
 }
+
 #mainApp {
     background-color: #f5dff0;
 }
 
 QWidget {
     background-color: #f5dff0;
+}
+
+QWidget:hover {
+#box-shadow: 0 0 0 3px #B05CD0;
+    border: 3px solid #B05CD0;
 }
 
 QProgressBar {

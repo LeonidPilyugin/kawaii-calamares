@@ -28,18 +28,18 @@ license=(
 	'MIT'
 	)
 source=("$pkgname-$pkgver.tar.gz::https://github.com/LeonidPilyugin/$pkgname/releases/download/v$pkgver/files.tar.gz")
-sha256sums=('85b5a21ee2720f71769970a7d3e13c9dddb9de0187bde2dfa4bcf392c2f4d9a0')
+sha256sums=('c3accd564b3080dd803ec4ee425966570e93e98735550e0db3c5e7bfed636bdb')
 
 prepare() {
     cd ${srcdir}/files
-    sed -i -e 's/"Install configuration files" OFF/"Install configuration files" ON/' CMakeLists.txt
-    sed -i -e 's/etc\/sddm.conf/etc\/sddm.conf.d\/kde_settings.conf/' src/modules/displaymanager/main.py
+    #sed -i -e 's/"Install configuration files" OFF/"Install configuration files" ON/' CMakeLists.txt
+    #sed -i -e 's/etc\/sddm.conf/etc\/sddm.conf.d\/kde_settings.conf/' src/modules/displaymanager/main.py
     # patches here
     # change version
-    _ver="$(cat CMakeLists.txt | grep -m3 -e "  VERSION" | grep -o "[[:digit:]]*" | xargs | sed s'/ /./g')"
-    printf 'Version: %s-%s' "${_ver}" "${pkgrel}"
-    sed -i -e "s|\${CALAMARES_VERSION_MAJOR}.\${CALAMARES_VERSION_MINOR}.\${CALAMARES_VERSION_PATCH}|${_ver}-${pkgrel}|g" CMakeLists.txt
-    sed -i -e "s|CALAMARES_VERSION_RC 1|CALAMARES_VERSION_RC 0|g" CMakeLists.txt
+    #_ver="$(cat CMakeLists.txt | grep -m3 -e "  VERSION" | grep -o "[[:digit:]]*" | xargs | #sed s'/ /./g')"
+    #printf 'Version: %s-%s' "${_ver}" "${pkgrel}"
+    #sed -i -e "s|\${CALAMARES_VERSION_MAJOR}.\${CALAMARES_VERSION_MINOR}.\${CALAMARES_VERSION_PATCH}|${_ver}-${pkgrel}|g" CMakeLists.txt
+    #sed -i -e "s|CALAMARES_VERSION_RC 1|CALAMARES_VERSION_RC 0|g" CMakeLists.txt
 
 }
 
@@ -48,6 +48,9 @@ build() {
     mkdir -p build
     cd build
         cmake .. \
+              -DWITH_QT6=true \
+              -DINSTALL_CONFIG=/etc/calamares \
+              -DQT_INSTALL_PREFIX=/usr/lib/qt6 \
               -DCMAKE_BUILD_TYPE=Release \
               -DCMAKE_INSTALL_PREFIX=/usr \
               -DCMAKE_INSTALL_LIBDIR=lib \
@@ -63,4 +66,6 @@ build() {
 package() {
     cd ${srcdir}/files/build
     make DESTDIR="$pkgdir" install
+    install -dm755 ${pkgdir}/etc/calamares
+    install -m644 ${srcdir}/files/settings.conf ${pkgdir}/etc/calamares/settings.conf
 }
