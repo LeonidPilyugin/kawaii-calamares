@@ -125,6 +125,7 @@ QPushButton:hover {
     background-color: #b05cd0;
     color: #220a3e;
     box-shadow: 0 0 0 3px #B05CD0;
+    border: 3px solid #b05cd0;
 }
 
 QLabel {
@@ -161,8 +162,7 @@ QWidget {
 }
 
 QWidget:hover {
-#box-shadow: 0 0 0 3px #B05CD0;
-    border: 3px solid #B05CD0;
+    border: 3px solid #b05cd0;
 }
 
 QProgressBar {

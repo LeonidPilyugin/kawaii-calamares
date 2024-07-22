@@ -16,7 +16,6 @@
 #include "compat/Mutex.h"
 #include "utils/Logger.h"
 
-#include <QApplication>
 #include <QDBusConnection>
 #include <QDBusMessage>
 #include <QDBusPendingCall>
@@ -136,8 +135,7 @@ PowerManagementInterface::inhibitSleep()
                                                        QStringLiteral( "/org/freedesktop/PowerManagement/Inhibit" ),
                                                        QStringLiteral( "org.freedesktop.PowerManagement.Inhibit" ),
                                                        QStringLiteral( "Inhibit" ) );
-    inhibitCall.setArguments(
-        { { tr( "Calamares" ) }, { tr( "Installation in progress", "@status" ) } } );
+    inhibitCall.setArguments( { { tr( "Calamares" ) }, { tr( "Installation in progress", "@status" ) } } );
 
     auto asyncReply = sessionBus.asyncCall( inhibitCall );
     auto* replyWatcher = new QDBusPendingCallWatcher( asyncReply, this );

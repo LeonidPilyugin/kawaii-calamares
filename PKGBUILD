@@ -1,7 +1,7 @@
 # Maintainer: Leonid Pilyugin <l.pilyugin04@gmail.com>>
 
 pkgname=kawaii-calamares
-pkgver=3.3.6
+pkgver=3.3.8
 pkgrel=1
 pkgdesc='Kawaii installer for MenheraOS'
 url='https://github.com/LeonidPilyugin/kawaii-calamares'
@@ -28,7 +28,7 @@ license=(
 	'MIT'
 	)
 source=("$pkgname-$pkgver.tar.gz::https://github.com/LeonidPilyugin/$pkgname/releases/download/v$pkgver/files.tar.gz")
-sha256sums=('c3accd564b3080dd803ec4ee425966570e93e98735550e0db3c5e7bfed636bdb')
+sha256sums=('cc9fb47aa5aaba9c48725d09c8a7e53242e839d3a2879e9425beaa0a92152eae')
 
 prepare() {
     cd ${srcdir}/files
