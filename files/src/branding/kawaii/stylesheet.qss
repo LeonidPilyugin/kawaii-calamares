@@ -161,10 +161,6 @@ QWidget {
     background-color: #f5dff0;
 }
 
-QWidget:hover {
-    border: 3px solid #b05cd0;
-}
-
 QProgressBar {
     color: #220a3e;
     background-color: #fff0ff;
