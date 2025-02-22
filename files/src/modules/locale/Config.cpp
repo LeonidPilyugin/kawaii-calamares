@@ -376,9 +376,11 @@ Config::setLCLocaleExplicitly( const QString& locale )
 QString
 Config::currentLocationStatus() const
 {
-    return tr( "Set timezone to %1/%2", "@action" )
-        .arg( m_currentLocation ? m_currentLocation->region() : QString(),
-              m_currentLocation ? m_currentLocation->zone() : QString() );
+    if ( m_currentLocation )
+    {
+        return tr( "Set timezone to %1.", "@action" ).arg( currentTimezoneName() );
+    }
+    return QString();
 }
 
 QString
@@ -511,6 +513,8 @@ getGeoIP( const QVariantMap& configurationMap, std::unique_ptr< Calamares::GeoIP
 void
 Config::setConfigurationMap( const QVariantMap& configurationMap )
 {
+    m_originalTimezone = Calamares::GeoIP::splitTZString( QTimeZone::systemTimeZoneId() );
+
     getLocaleGenLines( configurationMap, m_localeGenLines );
     getAdjustLiveTimezone( configurationMap, m_adjustLiveTimezone );
     getStartingTimezone( configurationMap, m_startingTimezone );
@@ -585,4 +589,13 @@ Config::completeGeoIP()
     }
     m_geoipWatcher.reset();
     m_geoip.reset();
+}
+
+void
+Config::cancel()
+{
+    if ( m_adjustLiveTimezone && m_originalTimezone.isValid() )
+    {
+        QProcess::execute( "timedatectl", { "set-timezone", m_originalTimezone.asString() } );
+    }
 }

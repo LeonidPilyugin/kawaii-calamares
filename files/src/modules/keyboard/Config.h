@@ -44,6 +44,9 @@ public:
     /// @brief When leaving the page, write to GS
     void finalize();
 
+    /// @brief Restore the system to whatever layout was in use when detectCurrentKeyboardLayout() was called
+    void cancel();
+
     static AdditionalLayoutInfo getAdditionalLayoutInfo( const QString& layout );
 
     /* A model is a physical configuration of a keyboard, e.g. 105-key PC
@@ -86,14 +89,14 @@ private:
      * keyboard layout. This introduces a slight delay between selecting
      * a keyboard, and applying it to the system -- so that if you
      * scroll through or down-arrow through the list of keyboards,
-     * you don't get buried under xkbset processes.
+     * you don't get buried under updates which might take some time.
      *
-     * xkbChanged() is called when the selection changes, and triggers
-     * a delayed call to xkbApply() which does the actual work.
+     * somethingChanged() is called when the selection changes, and triggers
+     * a delayed call to apply() which does the actual work by calling the
+     * relevant apply*() functions.
      */
-    void xkbChanged();
-    void xkbApply();
-    void locale1Apply();
+    void somethingChanged();
+    void apply();
 
     void getCurrentKeyboardLayoutXkb( QString& currentLayout, QString& currentVariant, QString& currentModel );
     void getCurrentKeyboardLayoutLocale1( QString& currentLayout, QString& currentVariant, QString& currentModel );
@@ -103,21 +106,21 @@ private:
     KeyboardVariantsModel* m_keyboardVariantsModel;
     KeyboardGroupsSwitchersModel* m_KeyboardGroupSwitcherModel;
 
-    QString m_selectedLayout;
-    QString m_selectedModel;
-    QString m_selectedVariant;
-    QString m_selectedGroup;
+    BasicLayoutInfo m_current;
+    BasicLayoutInfo m_original;
 
     // Layout (and corresponding info) added if current one doesn't support ASCII (e.g. Russian or Japanese)
     AdditionalLayoutInfo m_additionalLayoutInfo;
 
-    QTimer m_setxkbmapTimer;
+    QTimer m_applyTimer;
 
     // From configuration
     QString m_xOrgConfFileName;
     QString m_convertedKeymapPath;
-    bool m_writeEtcDefaultKeyboard = true;
-    bool m_useLocale1 = false;
+    bool m_configureXkb = true;
+    bool m_configureEtcDefaultKeyboard = true;
+    bool m_configureLocale1 = false;
+    bool m_configureKWin = false;
     bool m_guessLayout = false;
 
     // The state determines whether we guess settings or preserve them:
