@@ -27,45 +27,55 @@ license=(
 	'LGPL-3.0-or-later'
 	'MIT'
 	)
-source=("$pkgname-$pkgver.tar.gz::https://github.com/LeonidPilyugin/$pkgname/releases/download/v$pkgver/files.tar.gz")
-sha256sums=('80deda14178ed7d0f5d037c03257215bb0cc7c04500823311fe46782f9c5b933')
+makedepends=('extra-cmake-modules' 'git' 'qt6-tools' 'qt6-translations')
+source=(
+    "$pkgname-$pkgver.tar.gz::https://github.com/LeonidPilyugin/$pkgname/releases/download/v$pkgver/kawaii.patch"
+    "calamares-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz"
+)
+sha256sums=(
+    '8ae446d41f6000bf60443db90feca826b0262d5ded0f58be6e07f29ba5fd2027'
+    '523a0e4cfefbe471d9a6a5d874018fe282a4ce3667ff560bd97190339be6b592'
+)
 
 prepare() {
-    cd ${srcdir}/files
-    #sed -i -e 's/"Install configuration files" OFF/"Install configuration files" ON/' CMakeLists.txt
-    #sed -i -e 's/etc\/sddm.conf/etc\/sddm.conf.d\/kde_settings.conf/' src/modules/displaymanager/main.py
-    # patches here
-    # change version
-    #_ver="$(cat CMakeLists.txt | grep -m3 -e "  VERSION" | grep -o "[[:digit:]]*" | xargs | #sed s'/ /./g')"
-    #printf 'Version: %s-%s' "${_ver}" "${pkgrel}"
-    #sed -i -e "s|\${CALAMARES_VERSION_MAJOR}.\${CALAMARES_VERSION_MINOR}.\${CALAMARES_VERSION_PATCH}|${_ver}-${pkgrel}|g" CMakeLists.txt
-    #sed -i -e "s|CALAMARES_VERSION_RC 1|CALAMARES_VERSION_RC 0|g" CMakeLists.txt
-
+  cd "$_pkgsrc"
+  git apply ../kawaii.patch
 }
 
 build() {
-    cd ${srcdir}/files
-    mkdir -p build
-    cd build
-        cmake .. \
-              -DWITH_QT6=true \
-              -DINSTALL_CONFIG=/etc/calamares \
-              -DQT_INSTALL_PREFIX=/usr/lib/qt6 \
-              -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_INSTALL_PREFIX=/usr \
-              -DCMAKE_INSTALL_LIBDIR=lib \
-              -DWITH_PYTHONQT:BOOL=ON \
-              -DBoost_NO_BOOST_CMAKE=ON \
-              -DSKIP_MODULES="tracking webview interactiveterminal initramfs \
-                              initramfscfg dracut dracutlukscfg \
-                              dummyprocess dummypython dummycpp \
-                              dummypythonqt services-openrc"
-        make
+  local _skip_modules=(
+    dracut
+    dracutlukscfg
+    dummycpp
+    dummyprocess
+    dummypython
+    dummypythonqt
+    initramfs
+    initramfscfg
+    interactiveterminal
+    packagechooser
+    packagechooserq
+    services-openrc
+  )
+
+  local _cmake_options=(
+    -B build
+    -S "$_pkgsrc"
+    -G Ninja
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_INSTALL_PREFIX='/usr'
+    -DCMAKE_INSTALL_LIBDIR='lib'
+    -DWITH_QT6=ON
+    -DINSTALL_CONFIG=ON
+    -DSKIP_MODULES="${_skip_modules[*]}"
+    -DBUILD_TESTING=OFF
+    -Wno-dev
+  )
+
+  cmake "${_cmake_options[@]}"
+  cmake --build build
 }
 
 package() {
-    cd ${srcdir}/files/build
-    make DESTDIR="$pkgdir" install
-    install -dm755 ${pkgdir}/etc/calamares
-    install -m644 ${srcdir}/files/settings.conf ${pkgdir}/etc/calamares/settings.conf
+  DESTDIR="$pkgdir" cmake --install build
 }
