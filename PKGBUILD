@@ -1,10 +1,10 @@
 # Maintainer: Leonid Pilyugin <l.pilyugin04@gmail.com>>
 
 pkgname=kawaii-calamares
-pkgver=3.3.14
+pkgver=3.4.2
 pkgrel=1
 pkgdesc='Kawaii installer for MenheraOS'
-url='https://github.com/LeonidPilyugin/kawaii-calamares'
+url='https://codeberg.org/Calamares/calamares/releases/download/'
 arch=('x86_64')
 depends=(
 	'ckbcomp'
@@ -29,20 +29,22 @@ license=(
 	)
 makedepends=('extra-cmake-modules' 'git' 'qt6-tools' 'qt6-translations')
 source=(
-    "$pkgname-$pkgver.tar.gz::https://github.com/LeonidPilyugin/$pkgname/releases/download/v$pkgver/kawaii.patch"
-    "calamares-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz"
+    "kawaii.patch::https://github.com/LeonidPilyugin/$pkgname/releases/download/v$pkgver/kawaii.patch"
+    "calamares-$pkgver.tar.gz::$url/v$pkgver/calamares-$pkgver.tar.gz"
 )
 sha256sums=(
-    '8ae446d41f6000bf60443db90feca826b0262d5ded0f58be6e07f29ba5fd2027'
-    '523a0e4cfefbe471d9a6a5d874018fe282a4ce3667ff560bd97190339be6b592'
+    'dbcbe577ac1a44549578fecc331be00b4b8d34bd2069cc960fc3c17fafb7e8a1'
+    '733bbbb00dc9f84874bd5c22960952f317ea2537565431179fa2152b2fbfdccc'
 )
 
 prepare() {
-  cd "$_pkgsrc"
+  local _pkgsrc_dir="$srcdir/calamares-$pkgver"
+  cd "$_pkgsrc_dir"
   git apply ../kawaii.patch
 }
 
 build() {
+  local _pkgsrc_dir="$srcdir/calamares-$pkgver"
   local _skip_modules=(
     dracut
     dracutlukscfg
@@ -60,7 +62,7 @@ build() {
 
   local _cmake_options=(
     -B build
-    -S "$_pkgsrc"
+    -S "$_pkgsrc_dir"
     -G Ninja
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_INSTALL_PREFIX='/usr'
