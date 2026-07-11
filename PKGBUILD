@@ -33,7 +33,7 @@ source=(
     "calamares-$pkgver.tar.gz::$url/v$pkgver/calamares-$pkgver.tar.gz"
 )
 sha256sums=(
-    'dbcbe577ac1a44549578fecc331be00b4b8d34bd2069cc960fc3c17fafb7e8a1'
+    '7c0cb3c3c271cbaae83c8eee21f102faed0e8b10ef12e2f570bced6719ade788'
     '733bbbb00dc9f84874bd5c22960952f317ea2537565431179fa2152b2fbfdccc'
 )
 
